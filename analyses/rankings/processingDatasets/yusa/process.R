@@ -4,7 +4,6 @@ library(dplyr)
 library(stringr)
 data(txdb_human)
 
-# Spacers for SANGER are 19mer
 # so we need to convert our spacers:
 rankings <- readRDS("../../processingRankings/objects/rankings.rds")
 spacers <- str_extract(rankings$name, "_[A-Z]+")
