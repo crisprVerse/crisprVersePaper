@@ -1,0 +1,11 @@
+sabatini/raw/
+toronto/raw/
+torontov3/raw
+yusa/raw/
+achilles/raw
+objects/old
+objects/*.results.rds
+objects/rankings*
+processing/crisprverse/old/
+processing/crisprverse/crisprverse.results.rds
+old
