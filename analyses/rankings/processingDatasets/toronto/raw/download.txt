@@ -1,0 +1,4 @@
+This is the TKOv1 library
+From http://tko.ccbr.utoronto.ca/
+
+High-Resolution CRISPR Screens Reveal Fitness Genes and Genotype-Specific Cancer Liabilities
