@@ -13,7 +13,7 @@ myMatplot <- function(results,
 
     colors <- c(rep("deepskyblue2",2),
             rep("firebrick2",2))
-    lty <- c(1,3,1,3)
+    lty <- c(3,1,3,1)
     ylab <- "Time (seconds)"
     xlab <- "Number of mismatches"
     matplot(results,
@@ -46,7 +46,7 @@ myMatplot <- function(results,
            bty="n")
 }
 
-pdf("../figures/offtarget_comparison.pdf", width=7, height=2.5)
+pdf("../figures/offtarget_comparison.pdf", width=7, height=3)
 par(mfrow=c(1,3))
 ylim=c(0,130)
 myMatplot(results_kras, main="KRAS", ylim=ylim)
