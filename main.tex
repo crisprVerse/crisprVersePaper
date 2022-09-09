@@ -1,0 +1,1087 @@
+\RequirePackage[hyphens]{url}
+\documentclass[pdftex,english,10pt]{article}
+\usepackage{parskip}
+\usepackage{fullpage}
+\usepackage{rotating}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{babel}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{dsfont}
+\usepackage{upgreek}
+\usepackage{dsfont}
+\usepackage{subfig}
+\usepackage{multirow}
+\usepackage[htt]{hyphenat}
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+\usepackage{doi}
+\usepackage[authoryear]{natbib}
+\usepackage{authblk}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{multirow}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\definecolor{darkorange}{rgb}{0.9,0.5,0.2}
+\definecolor{byzantine}{rgb}{0.74, 0.2, 0.64}
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+\newcommand{\fixme}[1]{{\color{red} #1}}
+\newcommand{\addition}[1]{{\color{blue} #1}}
+\newcommand{\rev}[1]{{\color{byzantine} #1}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newenvironment{proof}[1][Proof]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
+\begin{document}
+
+
+
+\renewcommand\Affilfont{\small}
+
+
+\title{A comprehensive Bioconductor ecosystem for the design of CRISPR guide RNAs across nucleases and technologies}
+\author[1]{Luke Hoberecht}
+\author[2]{Pirunthan Perampalam}
+\author[1]{Aaron Lun}
+\author[1,*]{Jean-Philippe Fortin}
+\affil[1]{Genentech Research and Early Development, Genentech, Inc., 1 DNA Way, South San Francisco, CA, 94080, USA}
+\affil[2]{ProCogia Inc. under contract to Hoffmann-La Roche Limited}
+\date{}
+
+
+
+
+
+
+\let\oldthefootnote\thefootnote
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\footnotetext[1]{To whom correspondence should be addressed. Email: \texttt{fortin946@gmail.com}}
+\let\thefootnote\oldthefootnote
+
+
+
+\maketitle
+\
+\begin{abstract}
+\noindent 
+The success of CRISPR-mediated gene perturbation studies is highly dependent on the quality of gRNAs, and several tools have been developed to enable optimal gRNA design. 
+However, these tools are not all adaptable to the latest CRISPR modalities or nucleases, nor do they offer comprehensive annotation methods for advanced CRISPR applications. 
+Here, we present a new ecosystem of R packages, called \textit{crisprVerse}, that enables efficient gRNA design and annotation for a multitude of CRISPR technologies. This includes CRISPR knockout (CRISPRko), CRISPR activation (CRISPRa), CRISPR interference (CRISPRi), CRISPR base editing (CRISPRbe) and CRISPR knockdown (CRISPRkd). 
+The core package, \textit{crisprDesign}, offers a comprehensive, user-friendly, and unified interface to add on- and off-target annotations via several alignment methods, rich gene and SNP annotations, and a dozen on- and off-target activity scores. These functionalities are enabled for any RNA- or DNA-targeting nucleases, including Cas9, Cas12, and Cas13. 
+We illustrate the general applicability of our tools by designing optimal gRNAs for three case studies: tiling CRISPRbe library for \textit{BRCA1} using the base editor BE4max, tiling RNA-targeting libraries for \textit{CD46} and \textit{CD55} using CasRx, and activation of \textit{MMP7} using CRISPRa. 
+The \textit{crisprVerse} ecosystem is open-source and deployed through the Bioconductor project to facilitate its use by the CRISPR community (\url{https://github.com/crisprVerse}).
+\\
+\\
+\textbf{Keywords}: CRISPR, Nuclease, gRNA, functional genomics, Sequence design, Bioconductor, Base Editor, Cas9, Cas12a, Cas13d, crisprVerse. 
+ \end{abstract}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%              Introduction           %%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Main}
+
+
+The performance of CRISPR-based experiments depends critically on the choice of the guide RNAs (gRNAs) used to guide the CRISPR nuclease to the target site.
+Variable gRNA on-target activity, as well as unintended off-targeting effects, can lead to inconsistent phenotypic readouts in screening experiments. 
+For the purpose of analyzing pooled screens, many approaches attempt to model gRNA quality in the generation of gene-level scores to improve statistical inference \citep{ceres, bagel2, chronos, jacks, mageckmle}. However, suboptimal gRNA design is only partially mitigated by analysis strategies that sacrifice statistical power for robustness to suboptimal guides. One way to increase the signal-to-noise ratio in screening experiments is to enrich gRNA libraries for gRNAs that have high predicted on-target activity.  Predicting on-target activity from the spacer sequence is an extensive area of research, and several algorithms leveraging experimental data have been developed for different nucleases and contexts \citep{doench2016optimized, doench2014rational,azimuth,deepcas9, deepcpf1,toronto, crisprscan, crispria}. 
+
+In addition to its sequence, the genomic context of the on- and off-target sites for each gRNA is another important consideration for gRNA design. For example, designing gRNAs that uniquely map to the genome can be challenging, especially for genes sharing high homology with other genomic loci, either in coding or non-coding regions \citep{fortin2019}. Furthermore, knowing whether or not an off-target is located in the coding region of another gene can rule out the use of a given gRNA. Finally, genetic variation, such as single-nucleotide polymorphisms (SNPs) and small indels, can have a direct impact on gRNA binding activity and on-target specificity by altering complementarity between spacer sequences and the host cell genomic DNA \citep{scott2017implications, lessard2017human, canver2017variant, wang2018genetic}.
+
+
+The rapid increase of CRISPR-based applications and technologies poses another challenge to gRNA library design.
+A large variety of nucleases are now available and routinely used, including engineered nucleases that recognize a larger set of PAM sequences  \citep{xcas9,spcas9ng, spg, enpamgb} and novel classes of nucleases such as the RNA-targeting Cas13 family \citep{c2c2_1, c2c2_2,cas13d}. Each nuclease comes with its own set of gRNA design rules and constraints. In addition, these nucleases can also be mixed and matched with different types of CRISPR applications, increasing the complexity of gRNA design. As an example, CRISPR base editing (CRISPRbe) \citep{gaudelli,komor}, which requires additional gRNA design functionalities to capture the editing window and prediction of editing outcomes, can be combined with the Cas13 family to perform RNA editing \citep{rnaediting1}. Finally, emerging screening modalities, such as optical pooled CRISPR screening \citep{ops} and gRNA pairing, require additional specialized gRNA design considerations. 
+
+
+Given the complexity, heterogeneity, and fast growth of the aforementioned CRISPR modalities and applications, it is paramount to develop and maintain adaptable, modular, and robust software for gRNA design. This ensures that the scientific community can efficiently design first-class CRISPR reagents in a timely manner for both well-established and emerging technologies. An ideal gRNA design framework has the following qualities: (1) it offers multiple cutting-edge methods for on-target scoring and off-target prediction based on gRNA sequences, (2) it provides comprehensive gRNA annotation to enable consideration of the genomic context for all gRNA on-target and off-target sites, (3) it already supports (or can be easily extended to) newer CRISPR technologies, including an arbitrary combination of nucleases and modalities, and (4) it easily scales for designing large-scale gRNA libraries for different screening platforms. 
+While a multitude of web applications and command line interfaces has been developed to enable gene- or other target-specific gRNA design \citep{ecrisp,crisprscan,guidescan,casoffinder, chopchop, crispor, cctop, flashfry,cld,multicrispr, crisprseek}, none of the existing tools completely satisfies the requirements listed above.
+
+
+In this work, we describe a modular ecosystem of R packages, \rev{called \textit{crisprVerse}}, that enable the design of CRISPR gRNAs across a variety of nucleases, genomes, and applications. The \textit{crisprBowtie} and \textit{crisprBwa} packages provide comprehensive on-target and off-target search for reference genomes, transcriptomes, or any custom sequences. The \textit{crisprScore} package provides a harmonized framework to access a large array of R- and Python-based gRNA scoring algorithms developed by the CRISPR community, for both on-target and off-target scoring. The \textit{crisprBase} package implements functionalities to describe and represent DNA- and RNA-targeting CRISPR  nucleases, nickases and base editors, as well as genomic arithmetic rules that are specific to CRISPR design. The package \textit{crisprDesign} provides a user-friendly package to design and annotate gRNAs in one place, including gene and TSS annotation, search for SNP overlap, addition of evolutionary conservation scores, characterization of edited alleles for base editors, sequence-based design rules, and library design functionalities such as ranking and platform-specific considerations. \rev{Finally, the package \textit{crisprViz} allows users to visualize gRNAs within genomic tracks, with the option of embedding additional genomic annotations such as SNPs, repeat elements, or chromatin accessibility data.} The \textit{crisprVerse} ecosystem currently supports five different CRISPR modalities: CRISPR knockout (CRISPRko), CRISPR activation (CRISPRa), CRISPR interference (CRISPRi), CRISPR base editing (CRISPRbe) and CRISPR knockdown (CRISPRkd) using Cas13.  
+
+
+We illustrate the rich functionalities of our ecosystem through three case studies: designing gRNAs to edit \textit{BRCA1} using the base editor BE4max, designing gRNAs to knock down \textit{CD55} and \textit{CD46} using CasRx, and designing optimal gRNAs to activate \textit{MMP7} through CRISPRa for different wildtype and engineered nucleases. Our R packages are open-source and deployed through the Bioconductor project \citep{bioc1,bioc2}. This makes our tools fully interoperable with other packages, and facilitates long-term development and maintenance of our ecosystem. \rev{Source code, tutorials, and extensive documentation are provided on our website: \url{https://github.com/crisprVerse}.}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%               RESULTS              %%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+
+
+% crisprBase
+\subsection{\textit{crisprBase} as a core infrastructure package to represent CRISPR nucleases and base editors}
+
+The \textit{crisprBase} package implements a common framework for representing and manipulating nucleases and base editors through a set of classes and CRISPR-specific genome arithmetic functions. The \textit{CrisprNuclease} class provides a general representation of a CRISPR nuclease, encoding all of the information necessary to perform gRNA design and other analyses involving CRISPR technologies. This includes the PAM side with respect to the protospacer sequence, recognized PAM sequences with optional tolerance weights, and the relative cut site. Specific \textit{CrisprNuclease} instances can be easily created to represent a diversity of wild-type and engineered CRISPR nucleases (Figure~\ref{fig:nucleases}). We also implement a \textit{BaseEditor} subclass that provides additional base editing information such as the editing strand and a matrix of editing probabilities for possible nucleotide substitutions.
+
+%%% Nuclease figure
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{figures/nucleases/nucleases.pdf}
+  \caption{\textbf{Examples of DNA- and RNA-targeting nucleases represented in \textit{crisprBase}.} gRNA spacer sequences are shown in yellow. Target DNA/RNA protospacer sequences are shown in blue. Protospacer adjacent motifs (PAMs) and protospacer flanking sequences (PFSs) are shown in orange. Nuclease-specific cutting sites are represented by black triangles. For the C to T base editor BE4max, on-target editing happens on the DNA strand containing the protospacer sequence. The editing window varies by base editor. The first nucleotide of the PAM/PFS is used as the representative coordinate of a given target sequence. 
+  }
+  \label{fig:nucleases}
+\end{figure}
+
+
+
+
+
+
+% crisprDesign
+\subsection{\textit{crisprDesign}: a comprehensive tool to perform complex gRNA design}
+
+
+\textit{crisprDesign} offers a comprehensive suite of methods to design and annotate gRNAs (see Table~\ref{tab:methods}). 
+For users, the package provides a centralized and streamlined end-to-end workflow for gRNA design, alleviating the burden of using different tools at different stages of the design process. For developers, \textit{crisprDesign} is built on top of a modular package ecosystem that implements the gRNA design tasks (see Table~\ref{tab:software} in the Methods section), allowing the same code to be easily re-used outside of CRISPR applications and gRNA design. 
+
+\rev{
+Table~\ref{tab:methods} includes a comparison to ten commonly-used gRNA design softwares: \textit{multicrispr} \citep{multicrispr}, \textit{CRISPRseek} \citep{crisprseek}, \textit{CHOPCHOP} \citep{chopchop},  \textit{CRISPOR} \citep{crispor},  \textit{CCTop} \citep{cctop}, \textit{GUIDES} \citep{guides}, \textit{Cas-Designer} \citep{casdesigner}, \textit{FlashFry} \citep{flashfry}, \textit{E-CRISP} \citep{ecrisp} and \href{https://portals.broadinstitute.org/gppx/crispick/public}{CRISPick}; see the Methods section for a detailed description of the criteria used for benchmarking. While several of the features implemented in \textit{crisprDesign} are also available in other tools, \textit{crisprDesign} provides the most complete gRNA design solution across nucleases and modalities. Unlike \textit{crisprDesign}, many of the other tools do not provide informative on- and off-target annotations, limiting their use for optimal gRNA selection.} In the following sections, we describe each of the gRNA design components and functionalities that are available in \textit{crisprDesign}.
+
+
+
+% Table of crisprDesign functions
+\begin{sidewaystable}
+\centering 
+\scalebox{0.8}{
+\rev{
+\begin{tabular}{c|r|c|c|c|c|c|c|c|c|c|c|c|}
+ & & \textit{crisprDesign} & \textit{multicrispr} & \textit{CRISPRseek}  &  \textit{CHOPCHOP} &  \textit{CRISPOR} &  \textit{CCTop} &  \textit{GUIDES} 
+ &  \textit{Cas-Designer} &  \textit{FlashFry} &  \textit{E-CRISP} &  \textit{CRISPick} \\ \hline
+\multirow{5}{*}{Nuclease}   
+      & DNA-targeting: Cas9 & \checkmark & \checkmark  & \checkmark    &\checkmark &\checkmark&\checkmark&\checkmark&\checkmark&\checkmark&\checkmark&\checkmark \\ 
+      & DNA-targeting: Cas12 & \checkmark & & \checkmark    &\checkmark &\checkmark&\checkmark&&\checkmark&\checkmark&&\checkmark \\ 
+      & DNA-targeting: Custom  & \checkmark & Limited & \checkmark    &Limited &Limited&Limited&&\checkmark&Limited&&Limited \\ 
+      & RNA-targeting: Cas13 & \checkmark &  &      &  \checkmark &&&&&&&\\ 
+      & Nickase & \checkmark & \checkmark &  \checkmark & \checkmark   &  &&&&&&\\  \hline      
+\multirow{7}{*}{Modalities} 
+       & CRISPRko & \checkmark & \checkmark  & \checkmark    &\checkmark &\checkmark&\checkmark&\checkmark&\checkmark&\checkmark&\checkmark&\checkmark \\ 
+      & CRISPRbe &\checkmark &  &  \checkmark   &&&\checkmark&&\checkmark  &&& \\  
+      & CRISPRa &\checkmark &  &&  \checkmark   &&&&& &\checkmark&\checkmark \\  
+      & CRISPRi &\checkmark &  &&  \checkmark   &&&&&\checkmark & \checkmark&\checkmark\\  
+      & RNA editing (CRISPRkd) &\checkmark &  &&  \checkmark   &&&&& & &\\  
+      & OPS & \checkmark & &  &&&&& && &   \\  
+      & Prime editing & *  & \checkmark  & \checkmark &&&&&\checkmark  && &    \\  \hline      
+\multirow{2}{*}{Target space}   
+      & Reference genomes & \checkmark & \checkmark  & \checkmark    &\checkmark &\checkmark&\checkmark&Limited&\checkmark&\checkmark&\checkmark&\checkmark \\ 
+      & Custom sequences & \checkmark &   & \checkmark    &\checkmark &\checkmark&\checkmark&&\checkmark&\checkmark&&\checkmark \\   \hline      
+\multirow{3}{*}{Off-target aligner}   
+      & Bowtie & \checkmark & \checkmark &    &\checkmark&&\checkmark&\checkmark&& &\checkmark&\\ 
+      & BWA & \checkmark &  &      &&\checkmark&&&& &&\\ 
+      & Other & Biostrings & Biostrings  &Biostrings   &&&&& Cas-OFFinder &FlashFry& &  $\dagger$\\   \hline      
+\multirow{4}{*}{Off-target options}   
+      & Genomic coordinates&\checkmark &  & \checkmark   &&\checkmark&\checkmark&&\checkmark &\checkmark&& \\  
+      & Custom sequences &\checkmark &  & \checkmark    & &&&&& && \\  
+      & Cross-reactivity &\checkmark  &  &   &&&&& &&& \\  
+      & Minor/major alleles &\checkmark  &  & &&&&& &&& \\ \hline
+ \multirow{13}{*}{On-target scoring}   
+       & Rule Set 1&\checkmark  &\checkmark  & \checkmark   &\checkmark&\checkmark&&&&\checkmark&\checkmark  &\\  
+       & Azimuth &\checkmark  &\checkmark  & \checkmark  &\checkmark&\checkmark&&\checkmark&&\checkmark&&\checkmark  \\  
+        & Rule Set 3 &\checkmark  &  &   &&&&&&&&\checkmark  \\  
+        & CRISPRscan&\checkmark &                  & \checkmark &\checkmark&\checkmark&&&&\checkmark&&   \\  
+        & CRISPRater &\checkmark   &                &                     &&\checkmark&\checkmark&&&&&  \\  
+       & DeepCpf1 &\checkmark&  &   \checkmark   &&\checkmark&&& &&&\checkmark \\  
+       & DeepSpCas9 &\checkmark   &  &       & &&&&& &&\\  
+       & DeepHF&\checkmark  & &    &&&&& &&& \\  
+       	& Lindel&\checkmark & &    \checkmark &&\checkmark&&& &&& \\  
+        &CRISPRai &\checkmark & &     &&&&& && &\\  
+       & EnPAM+GB &\checkmark  &  &        &&&&&& &&\checkmark \\  
+       & CasRx-RF&\checkmark   &  &       & &&&&& &&\\  
+ 	& PAM scoring&\checkmark  &  &      &&&&& &&& \\  \hline
+ \multirow{3}{*}{Off-target scoring}   
+       & MIT &\checkmark &  &   \checkmark     &&\checkmark&&& &\checkmark&& \\  
+       & CFD &\checkmark &  &   \checkmark   &&\checkmark&&\checkmark& &\checkmark&&\checkmark\\  
+       & CasRx  &\checkmark &  &     &&&&& &&&\\  \hline 
+\multirow{7}{*}{Annotations}   
+       & Off-target annotation &\checkmark&  &    \checkmark &&\checkmark&\checkmark&& &&&   \\  
+       & Isoform specification &\checkmark&  &    &&&&& &&\checkmark&     \\  
+       & Reinitiation sites &\checkmark&  &    &\checkmark&&&& && &  \\  
+       & Pfam domains&\checkmark &  &      &&&&\checkmark& && &\\  
+       	& SNP annotation &\checkmark&  &   &&\checkmark&&& && &  \\  
+      & TSS annotation &\checkmark &  &   &&&&& && \checkmark&\checkmark   \\
+            & Conservation &\checkmark &  &   &&&&& && &   \\  \hline 
+\multirow{6}{*}{Library design}   
+	& Restriction sites &\checkmark &  &  \checkmark  &\checkmark&\checkmark&&& &&  \checkmark&     \\  
+       & PolyT signal&\checkmark   &  &      &&\checkmark&&& &\checkmark&\checkmark&   \\  
+       & GC content &\checkmark &  &    &\checkmark&\checkmark&&&\checkmark &\checkmark&\checkmark&  \\  
+	& Hairpin loops &\checkmark &  &     &\checkmark&&&& && & \\   
+       & Paired gRNAs &\checkmark &\checkmark&\checkmark&\checkmark&&&& &&\checkmark & \\
+        & Ranking &\checkmark &&&\checkmark&&\checkmark&&& \checkmark&&\checkmark  \\   \hline 
+\end{tabular}
+}
+}
+\caption{\rev{\textbf{gRNA design functionalities implemented in \textit{crisprDesign} and commonly-used gRNA design tools.} Check marks indicate which functionalities are present in each tool at time of publication. $*$ In progress. $\dagger$ Information could not be found. See the Methods section for a detailed description of the criteria used for assessing feature availability.} }
+\label{tab:methods}
+\end{sidewaystable}
+
+
+
+
+
+
+% GuideSet
+\subsection{Representation of gRNAs using the \textit{GuideSet} container}
+
+The genomic coordinates of gRNA protospacer sequences in a target genome can be represented using genomic ranges.
+The Bioconductor project \citep{bioc1,bioc2} provides a robust and well-developed core data structure, called \textit{GRanges} \citep{genomicranges,granges}), to efficiently represent genomic intervals. We provide in \textit{crisprDesign} an extension of the \textit{GRanges} class to represent and annotate gRNA sequences: the \textit{GuideSet} container. Briefly, the container extends the \textit{GRanges} object to store additional project-specific metadata information, such as the CRISPR nuclease employed and target mRNA or DNA sequences (if different from a reference genome), as well as rich gRNA-level annotation columns such as on- and off-target alignments tables and gene context annotations. In Figure \ref{fig:guideset},  we show an example of a \textit{GuideSet} storing information about gRNAs targeting the coding sequence of \textit{KRAS} using SpCas9. 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ON-TARGET SCORING
+\subsection{\textit{crisprScore} implements state-of-the-art scoring methods}
+
+Predicting on-target binding and cutting efficiency of gRNAs is an extensive area of research. Many algorithms have been developed to tackle this problem, basing their prediction on a variety of features: sequence composition of the spacer sequence and flanking regions, including nucleotide content and melting temperature, cell type-specific chromatin accessibility data, and distance to transcription starting site (TSS).  Unfortunately, the heterogeneity in the algorithm implementations hinders the practical use of those algorithms: some methods are implemented in Python 2 \citep{azimuth,deepcpf1,crispria, deepspcas9}, in Python 3 \citep{lindel,deepcas9,enpamgb}, or in R  \citep{doench2014rational,wessels2020massively,crisprscan,crisprater}. In addition, the required inputs, data structures, and terminology are not consistent across software and algorithms, increasing the likelihood of user error. Finally, several of the algorithms are currently not bundled up into easy-to-use packages, limiting their accessibility and therefore their usage.
+
+To resolve this, we created a general and harmonized framework for on-target and off-target prediction of gRNAs, implemented in our R package \textit{crisprScore}. The philosophy behind \textit{crisprScore} is to abstract away from the user the language, implementation, and complexity of the different algorithms used for prediction.  It uses the Bioconductor package \textit{basilisk} \citep{basilisk} to seamlessly integrate and manage incompatible Python modules in one user session. This enables \textit{crisprScore} to centralize all Python-based scoring algorithms together with R-based prediction algorithms, reporting all scores in a single data frame for convenient inspection. By providing a harmonized user interface, our framework facilitates methods comparison. 
+
+We note that while the package provides a harmonized framework from a user perspective, it also allows each scoring algorithm to be implemented with its own sets of parameters and inputs. We have included as many methods as possible (Table~\ref{tab:crisprscore}), with the goal of democratizing the use of different scoring algorithms in an unbiased manner. Developers can easily contribute new methods to the \textit{crisprScore} package as they become available. 
+
+
+% Off-target search
+\subsection{\textit{crisprDesign} enables fast characterization and annotation of off-targets}
+
+Off-targeting effects can occur when a spacer sequence maps with
+perfect or imperfect complementarity to a genomic locus other than the primary on-target.
+Given that nucleases can still bind and cut in the presence of nucleotide mismatches between spacer sequences and target DNA sequences \citep{offtarget1,offtarget2,offtarget3}, it is paramount to obtain and characterize all putative mismatch-mediated off-targets.
+
+The off-target functionalities in \textit{crisprDesign} are divided into two parts: off-target search (alignment) and off-target characterization (genomic context and scoring). For the off-target search, we offer three different alignment methods: \textit{Bowtie} \citep{bowtie}, the BWA-backtrack algorithm in \textit{BWA} \citep{bwa} and the Aho-Corasick exact string matching method implemented in \textit{Biostrings} \citep{aho1975efficient,pages2016biostrings}. 
+We developed two independent R packages to implement the \textit{Bowtie} and \textit{BWA} alignment methods: \textit{crisprBowtie} and \textit{crisprBwa}. 
+Notably, the packages were developed to work with any nucleases, and for both DNA and RNA target spaces (reference genomes and transcriptomes, respectively). 
+While the maximum number of mismatches for \textit{Bowtie} is limited to 3, there is no limit for \textit{BWA}. 
+
+Given the short nature of gRNA spacer sequences, both \textit{Bowtie} and \textit{BWA} are ideal tools for off-target search and provide ultrafast results.
+On the other hand, the alignment method based on the Bioconductor package \textit{Biostrings} does not need the creation of a genome index, and is particularly useful for off-target search in short custom sequences. All methods can be invoked via the \textit{addSpacerAlignments} function, which returns the on- and off-target alignments as a \textit{GRanges} object in the \textit{GuideSet} metadata.
+
+
+To add genomic context to the on- and off-targets, a \textit{TxDb} object can be provided to the \textit{addSpacerAlignments} function. 
+The \textit{TxDb} object is a standard Bioconductor object to store information about a gene model, and can easily be made from transcript annotations available as GFF3 or GTF files. Gene annotation columns are added to the off-target table for different contexts: 5' UTRs, 3' UTRs, CDS, exons, and introns. Finally, users can add the MIT and CDF off-target specificity scores \citep{mit, azimuth} implemented in \textit{crisprScore} to characterize the likelihood of nuclease cleavage at the off-targets. 
+
+
+%%% GuideSet figure
+\begin{figure}
+\centering
+\includegraphics[width=0.83\textwidth]{figures/guideset/guideset.pdf}
+  \caption{\textbf{Example of a GuideSet container for gRNAs targeting \textit{KRAS} using SpCas9.} 
+ \textbf{a} The blue box stores the genomic coordinates in GRCh38 to represent the target protospacer sequences using a GRanges object. 
+By convention, we use the first nucleotide of the PAM sequence (in the 5$^{\prime}$ to 3$^{\prime}$ direction) as the representative genomic coordinate of protospacer sequences. The pink box stores sequence information of the protospacers and PAMs. The yellow box represents global metadata used for creating the GuideSet, including a formal \textit{CrisprNuclease} object, the reference genome of the target protospacers, and gene model used for annotation. The grey boxes are examples of optional gRNA-level metadata columns that store information about enzyme restriction sites, spacer sequence features such as GC content, and on- and off-target scores. The green boxes represent optional per-gRNA annotations for SNP overlap, on- and off-target alignments, and gene context; each annotation stores a detailed table (2 dimensions) for each gRNA (3rd dimension). 
+\textbf{b} Selected annotations for gRNA 1 corresponding to the row highlighted in the green boxes of \textbf{a}. 
+\textbf{c} The first genomic track represents the four annotated protein-coding isoforms of human gene \textit{KRAS} in GRCh38 coordinates. The second track shows the 4 gRNAs shown in the blue box of \textbf{a}.
+}
+  \label{fig:guideset}
+\end{figure}
+
+
+
+
+% Off-target alignment comparison
+\subsubsection*{Comparison of the off-target annotation methods}
+
+
+We compared the performance of the two short-read aligners implemented in \textit{crisprDesign}.
+The \textit{Bowtie} alignment is used by the tools \textit{CHOPCHOP} \citep{chopchop}, \textit{CCTop} \citep{cctop}, and \textit{multicrispr} \citep{multicrispr} and that the \textit{BWA} method is used by \textit{CRISPOR} \citep{crispor}. The \textit{Biostrings} method is used by both \textit{CRISPRseek} \citep{crisprseek} and \textit{multicrispr}.
+
+\citet{multicrispr} reported that \textit{Bowtie} misses a large number of double-mismatch
+and triple-mismatch off-targets in comparison to the gold-standard complete string matching algorithm.
+To investigate this, we repeated the PAM-agnostic on- and off-target alignment of the 10 spacer sequences described in \citet{multicrispr} to the GRCh38 reference genome using all three alignment methods. In contrast to \citet{multicrispr}, all three alignment methods implemented in \textit{crisprDesign} return an identical list of off-targets (see Table~\ref{supptab:offtargets}). This indicates that, contrary to previous reports, both \textit{BWA} and \textit{Bowtie} provide a complete on- and off-target search. It appears that the missing off-targets in \citet{multicrispr} are located on unlocalized and unplaced GRCh38 sequences.
+
+Next, we evaluated the run times of four configurations offered in \textit{crisprDesign} for alignment: \textit{Bowtie}, \textit{BWA}, an iterative version of \textit{Bowtie} (bowtie-int) and an iterative version of \textit{BWA} (bwa-int). We developed iterative versions of the \textit{Bowtie} and \textit{BWA} alignments to avoid situations where gRNAs are mapping to hundreds of loci in the genome, considerably slowing down the off-target search when a higher number of mismatches is allowed.  The iterative strategy starts by aligning spacer sequences with no mismatches allowed. Then, it sequentially performs the alignment with a higher number of mismatches only for sequences that have a low number of off-targets at the previous step, thus avoiding the cost of extra searches for low-quality sequences that already have many off-targets.  We performed the evaluation on three sets of gRNAs targeting the human genome, each with a different size (see Methods).  For all three sets, the \textit{Bowtie} and BWA gRNA alignments have comparable run times. (Figure~\ref{suppfig:offtargets}).
+The iterative version of the index-based aligners shows substantial gain in speed for the set of gRNAs targeting \textit{ZNF101}, which contains several non-specific guides overlapping a repeat element. 
+
+
+
+% CRISPR SCORE TABLE
+\begin{table}[]
+\centering
+\small
+\begin{tabular}{c|c|c|c|c}
+Nuclease & Variant & Method & Type  & Reference  \\ \hline
+\multirow{11}{*}{SpCas9}   
+                  & WT & RuleSet1 & On-target efficiency    &  \citet{doench2014rational}\\ 
+                  & WT & Azimuth & On-target efficiency  & \citet{azimuth}  \\
+                  & \rev{WT} & \rev{RuleSet3} & \rev{On-target efficiency}  & \citet{ruleset3}  \\
+                  & WT & CRISPRscan & On-target efficiency  & \citet{crisprscan}  \\
+                  & WT & CRISPRai & On-target efficiency  & \citet{crispria} \\
+                  & WT & DeepHF & On-target efficiency   & \citet{deepcas9} \\
+                  & HiFi & DeepHF & On-target efficiency   & \citet{deepcas9} \\
+                  & WT & Lindel & On-target efficiency   & \citet{lindel} \\
+                  & \rev{WT} & \rev{DeepSpCas9} & \rev{On-target efficiency} & \citet{deepspcas9} \\
+                  & \rev{WT} & \rev{CRISPRater} & \rev{On-target efficiency} & \citet{crisprater} \\
+                  & WT & MIT & Off-target cutting   & \citet{mit} \\
+                  & WT & CFD & Off-target cutting   & \citet{doench2016optimized} \\ \hline
+\multirow{2}{*}{AsCas12a} 
+                  & WT& DeepCpf1 & On-target efficiency &  \citet{deepcpf1} \\
+                  & Enhanced & enPAM+GB & On-target efficiency & \citet{enpamgb} \\ \hline
+\multirow{2}{*}{RfxCas13d} 
+                  & WT& CasRx-RF & On-target efficiency &  \citet{wessels2020massively} \\
+                  & WT& CasRx-CFD & Off-target cutting &  \citet{crisprScore} \\
+\end{tabular}
+\caption{On-target and off-target scoring methods currently available in \textit{crisprScore}.}
+\label{tab:crisprscore}
+\end{table}
+
+
+
+ 
+% SNP annotation.
+\subsection{Accounting for human genetic variation by adding SNP annotation}
+
+Genetic variation, such as SNPs and small indels, can have a direct impact on gRNA binding productivity and on-target specificity by altering complementarity between spacer sequences and the target DNA or RNA \citep{scott2017implications, lessard2017human, canver2017variant, wang2018genetic}. 
+In \textit{crisprDesign}, users can apply the function \textit{addSNPAnnotation} to annotate gRNAs for which the target protospacer sequence overlaps a SNP.
+This enables users to discard or flag undesirable gRNAs that are likely to have variable activity across different human genomes.
+
+Given that the current human reference genome was built using only a small number of individuals, the allele represented in the human reference genome at a particular locus does not always correspond to the major allele in a population of interest. Inspired by the major-allele reference genome indices provided by the \textit{Bowtie} team (see \url{https://github.com/BenLangmead/bowtie-majref}), we created two new human genomes to be used throughout our ecosystem that represent the major allele and the minor allele using dbSNP151 (see Methods). Both genomes are available in Bioconductor as \textit{BSgenome} packages. Both packages can be used in our ecosystem to improve gRNA design by designing gRNAs against either the minor or major allele genome, and searching for off-targets in both the major and minor allele genomes. 
+
+
+
+
+
+% GENE ANNOTATION
+\subsection{Comprehensive gene and functional annotations}
+
+The genomic context of the on-target sites is paramount for optimally selecting gRNAs in most, if not all, CRISPR applications. 
+\textit{crisprDesign} includes the \textit{addGeneAnnotation} and \textit{addTssAnnotation} functions, which 
+report comprehensive transcript- and promoter-specific context for each gRNA target site, respectively. 
+Users simply need to provide a standard Bioconductor \textit{TxDb} object to specify which gene model should be used to annotate on- and off-targets.
+
+For CRISPRko applications, \textit{addGeneAnnotation} annotates which isoforms of a given gene are targeted. It also adds spatial information about the relative cut site within the coding sequence of each isoform, which has been shown to contribute to gRNA activity \citep{azimuth}. Since translation reinitiation can result in residual protein expression \citep{smits2019biological}, \textit{addGeneAnnotation} reports whether or not the gRNA cut site precedes any downstream in-frame ATG sequences, following the rules of \citet{cohen2019nonsense}. Additionally, to maximize gene knockout based on protein domains \citep{he2019novo}, we include Pfam domain annotation \citep{pfam} via the \textit{biomarRt} package \citep{biomart}. For CRISPRa and CRISPRi applications, \textit{addTssAnnotation} indicates which promoter regions are targeted by each gRNA, as well as the location of the target cut site relative to the TSS. This allows the user to easily select guides in the optimal targeting window. 
+ 
+To further put the gRNA targets into biological context, users can access thousands of genomic annotation datasets through the Bioconductor \textit{AnnotationHub} resource.  The resource includes common sources such as Ensembl, ENCODE, dbSNP and UCSC. Where appropriate, those annotations are in the \textit{GenomicRanges} format, which make them directly compatible with the \textit{GuideSet} object used to represent gRNAs in our ecosystem. By leveraging overlap operations on \textit{GenomicRanges}, users can identify which gRNAs are present or absent in a given set of annotated features by using a few lines of code.  For example, users can ask \textit{AnnotationHub} whether a gRNA is targeting repeat elements to avoid cutting-induced toxicity, or whether a gRNA targets the region upstream of an annotated Cap Analysis of Gene Expression (CAGE) peak for CRISPRa applications. \rev{Additionally, the \textit{rtracklayer} Bioconductor package \citep{rtracklayer} provides functionalities to easily read genome annotations that are stored in the commonly-used WIG, BED, bigWig and bedGraph formats. Utilizing \textit{rtracklayer}, \textit{crisprDesign} provides the function \textit{addConservationScores} to annotate gRNAs with evolutionary conservation scores obtained from the UCSC genome browser (see Methods). }
+
+
+
+
+% LIBRARY DESIGN
+\subsection{Advanced functionalities for designing screening libraries}
+
+Efficient cleavage can be disrupted by certain features of the gRNA sequence, such as very low or high percent GC content \citep{chen2018improved, doench2014rational, wang2014genetic}, homopolymers of four nucleotides or longer \citep{gilbert2014genomescale, pincer}, and self-complementarity conducive to hairpin formation \citep{thyme2016internal, labun2016chopchop}. When gRNAs are expressed from a U6 promoter, thymine homopolymers (TTTT) are particularly undesirable as they signal transcription termination. The \textit{addSequenceFeatures} function flags all gRNAs that contain such undesirable sequence features. Another consideration in designing gRNA libraries is to exclude spacer sequences that are not compatible with the oligonucleotide cloning strategy. gRNAs that contain restriction sites of the enzymes used to clone the spacer sequences into a lentiviral vector should be excluded. The \textit{addRestrictionEnzymes} function flags all gRNAs that contain restriction enzyme recognition motifs.
+
+Optical pooled screening (OPS) is a promising novel screening modality that combines image-based \textit{in situ} sequencing of gRNAs and optical phenotyping on the same physical wells \citep{ops}. This enables linking genomic perturbations with high-content imaging at large scale. In such experiments, gRNA spacer sequences are partially sequenced. This translates to additional gRNA design constraints to ensure sufficient dissimilarity of the truncated spacer sequences.  \textit{crisprDesign} contains a suite of design functions that take into account OPS constraints, while ensuring that the final OPS library is enriched for gRNAs with best predicted activity. 
+
+\rev{
+To assist with the design of complex libraries, we developed the package \textit{crisprViz} to visualize gRNAs.
+The package uses the Bioconductor package \textit{Gviz} \citep{gviz} to offer a flexible and integrated visualization of gRNAs along genomic coordinates. 
+Users can visually inspect gRNAs within a genomic track with the option of adding annotation tracks such as transcript models, SNP annotations, repeat elements, and nucleotide sequences. 
+}
+
+
+\rev{
+
+% Functional annotations
+\subsection{Functional annotations in \textit{crisprDesign} improve gRNA selection}
+
+We illustrate how functional annotations implemented in \textit{crisprDesign} can improve gRNA selection by focusing on two functionalities: \textit{addConservationScores} and \textit{addGeneAnnotation}. We assessed the \textit{addConservationScores} function using the large-scale CRISPRko fitness screening dataset from Project Achilles \citep{ceres}. We obtained normalized log fold changes (LFCs) measuring gRNA dropout over time (see Methods). In fitness screens, gRNAs targeting essential genes should deplete over time, and are therefore expected to have negative LFCs. Therefore, gRNAs targeting essential genes can be used to investigate determinants of gRNA activity. We downloaded basewise phyloP scores \citep{pollard2010detection} from the UCSC genome browser. Scores were calculated from a phylogenic alignment of 30 vertebrate species (see Methods). Positive and negative scores represent evolutionary conservation and acceleration, respectively.  In Figure~\ref{suppfig:cons}a, we show the correlation between LFCs and conservation scores obtained using different window sizes, for gRNAs targeting a reference set of essential genes \citep{hart2014}. The data suggest an optimal window of 18 nucleotides around the cut site, which is our recommended window size in \textit{crisprDesign}. In Figure~\ref{suppfig:cons}b, we present LFC distributions of gRNAs targeting essential genes, split by the sign of the gRNA conservation score. gRNAs targeting conserved regions (positive score, red line) show greater activity than less conserved regions (negative score, black line) as observed by greater gRNA dropout. This is in line with previous results \citep{crispro,ruleset3,pincer}. gRNAs targeting non-essential genes serve as negative controls and show no dropout, irrespective of the conservation scores, as expected (Figure~\ref{suppfig:cons}c). 
+
+Next, we sought to understand how gRNA position within the CDS of the target gene impacts gRNA activity. Given that most gRNAs in Project Achilles were located in the first 50\% of the target CDS by design, we obtained a different screening dataset; we downloaded data from a genome-wide fitness screen performed in HCT116 cells (Hart2015 dataset, see Methods). We used the \textit{addGeneAnnotation} function in \textit{crisprDesign} to annotate gRNAs with a position percentage of the target CDS. We used the Ensembl canonical transcript of the target gene as the representative CDS. In Figure~\ref{suppfig:cons}d, we show the relationship between LFCs and \% CDS for gRNAs targeting essential genes. gRNAs located beyond the first 85\% of the CDS (to the right of the vertical line) show a progressive decline in activity. The results agree with the litterature \citep{azimuth}. gRNAs targeting non-essential genes serve as negative controls and behave as expected (Figure~\ref{suppfig:cons}e). 
+
+Based on these results, both functional annotations help selecting more active gRNAs; we recommend in \textit{crisprDesign} to prioritize gRNAs with positive conservation scores, and located in the first 85\% of the target CDS. Those recommended parameters are implemented as the default parameters in the \textit{crisprDesign} gRNA ranking procedure discussed next. 
+ }
+
+
+
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%     CASE STUDIES              %%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Case studies}
+
+
+
+% gRNA ranking
+\rev{
+
+\subsection{gRNA ranking from crisprDesign returns optimized gRNAs}
+
+To complement gRNA annotation and assist in library design, \textit{crisprDesign} provides a gRNA ranking function called \textit{rankSpacers}. 
+The function implements our recommended ranking parameters for the nucleases SpCas9, enCas12a, and CasRx, effectively enabling library design automation across targets. 
+It is designed to optimize both on-target activity and minimize off-targeting effects, and includes the functional annotations described in the previous section. 
+Details are provided in the Methods section. 
+
+
+We compared our default gRNA ranking procedure to other tools listed in Table~\ref{tab:methods} that provide gRNA rankings: \textit{CHOPCHOP}, \textit{CCTop}, \textit{FlashFry} and \textit{CRISPick}. To perform the evaluation, we designed and ranked SpCas9 gRNAs for all human protein-coding genes (Ensembl release 104) using each tool separately (see Methods). Next, we obtained and processed 5 human genome-wide fitness screen datasets from published studies (Table~\ref{tab:screens}), each performed using a different gRNA library. For each dataset and gRNA, a LFC between later and earlier time point samples was calculated to quantify gRNA dropout over time. 
+
+gRNAs targeting essential genes are expected to drop out and can be used for benchmarking purposes. 
+To investigate the relationship between gRNA activity and gRNA ranking, we considered for each gRNA library the subset of gRNAs targeting a common reference set of essential genes \citep{hart2014}. For each gene and tool, we identified the top 15 ranked gRNAs based on the tool-specific in silico ranking. In Figure~\ref{fig:rankings}a, we show the distributions of LFCs in the Hart2015 dataset based on two groups: red lines show the distributions of the top 15 ranked gRNAs across genes, and green lines show the distributions of remaining gRNAs. Top ranked gRNAs from \textit{CRISPick} and \textit{crisprDesign} show greater activity than lower ranked gRNAs, as indicated by a negative shift in the red distributions with respect to the green distributions. 
+
+We repeated the analysis for each dataset, and summarized the performance of the top ranked gRNAs at discriminating active gRNAs by calculating the difference in means between the green and red distributions ($\Delta$ LFC). Results are shown in Figure ~\ref{fig:rankings}b. Higher $\Delta$ LFCs indicate better performance, and results indicate that both \textit{CRISPick} and \textit{crisprDesign} perform well across all datasets.
+
+
+% Datasets used for ranking
+\begin{table}[]
+\centering 
+\rev{
+\begin{tabular}{c|c|c|c|c}
+Dataset   & gRNA library  & Cell Line & Number of gRNAs  & Reference \\ \hline
+Achilles  & Avana   & (many)   & 67,816  &       \citet{ceres}    \\
+Hart2015 & TKOv1  &  HCT116     & 164,576 &         \citet{toronto1}       \\
+Hart2017 & TKOv3    & HAP1        & 81,967 &     \citet{toronto3}         \\
+Wang2015 & Sabatini & K562      &166, 855 &          \citet{sabatini}     \\
+Tzelepis2016  &     Yusa     &  HL60     &   85,192 &         \citet{yusa}  
+\end{tabular}
+}
+\caption{\textbf{Genome-wide human CRISPRko screen datasets used for comparing SpCas9 gRNA rankings}}
+\label{tab:screens}
+\end{table}
+
+
+
+
+%%% Rankings figures
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{figures/rankings/rankings.pdf}
+  \caption{\rev{\textbf{Comparison of CRISPRko Cas9 gRNA rankings for protein-coding human genes.} We designed and ranked gRNAs targeting all protein-coding human genes (Ensembl release 104) using tools that provide gRNA rankings: \textit{CCTop}, \textit{CHOPCHOP}, \textit{FlashFry}, \textit{CRISPick} and \textit{crisprDesign}. To compare gRNA ranking performance across tools, we obtained gRNA LFCs from 5 genome-wide CRISPRko fitness screening datasets, listed in Table~\ref{tab:screens}. In these fitness screens, active gRNAs targeting essential genes are expected to drop out and show negative LFCs. To investigate the relationship between gRNA activity and gRNA ranking, we considered for each gRNA library the subset of gRNAs targeting a common reference set of essential genes \citep{hart2014}. For each gene and tool, we identified the top 15 ranked gRNAs based on the tool-specific in silico ranking. \textbf{a} LFC distributions in the Hart2015 dataset for gRNAs targeting essential genes (solid lines) and gRNAs targeting non-essential genes (dotted lines). Red lines show the distributions of the top 15 ranked gRNAs across genes, and green lines show the distributions of remaining gRNAs. For essential genes, top ranked gRNAs from \textit{CRISPick} and \textit{crisprDesign} show greater activity than lower ranked gRNAs (red distributions are negatively skewed). As expected, there are no differences for gRNAs targeting non-essential genes. \textbf{b} We repeated the analysis described in \textbf{a} for each dataset. We summarized the performance of the top ranked gRNAs by calculating the difference in means between the green and red distributions ($\Delta$ LFC), for essential genes only. A higher $\Delta$ LFC indicates better performance.  For each method and dataset, a t-test was performed to quantify the difference in LFCs between the top ranked gRNAs and the remaining gRNAs. Corresponding p-values are reported above the bars ($*$: p-value $<0.05$; $**$: p-value $<0.01$; $***$: p-value $<0.001$.)
+  }}
+  \label{fig:rankings}
+\end{figure}
+
+}
+
+
+% CRISPRbe
+\subsection{Designing gRNAs targeting \textit{BRCA1} for the base editor BE4max} 
+
+CRISPR base editors are deaminases fused to CRISPR nickases to introduce mutations at loci targeted by the gRNAs without introducing double-stranded breaks (DSBs) \citep{gaudelli,komor}. A recent study showed high heterogeneity and complexity of the editing outcomes across eight popular base editors, motivating the need of robust but flexible software to design gRNAs for base editing applications \citep{behive}. In particular, this includes functionalities for listing and characterizing potential edited alleles introduced by gRNAs to inform the phenotypic readouts created by those gRNAs.
+
+To illustrate the functionalities of our ecosystem for designing base editor gRNAs, we designed and characterized all possible gRNAs targeting the coding sequence of \textit{BRCA1} for the cytidine base editor BE4max \citep{koblan2018improving}. The design workflow is shown in Figure~\ref{fig:crisprbe}. 
+
+The first step consisted of designing all possible guides targeting \textit{BRCA1} using the \textit{findSpacers} function in \textit{crisprDesign}. The BE4max \textit{BaseEditor} object from \textit{crisprBase} was used to store nucleotide- and position-specific editing probabilities (see Figure~\ref{fig:crisprbe}a), which inform the editing window of interest for each of the gRNA targets. Next, using the function \textit{getEditedAlleles}, we generated and stored all possible editing events at each gRNA (see Figure~\ref{fig:crisprbe}b). The function also adds a score for each edited allele that quantifies the likelihood of editing to occur based on the editing probabilities stored in the \textit{BaseEditor} object (see Methods). In addition, each edited allele is annotated for its predicted functional consequence: silent, missense, or nonsense mutation. In case several mutations occur in a given edited allele, the most consequential mutation is used to label the allele (nonsense over missense, and missense over silent).  For each gRNA, and for each mutation type, we then generated a gRNA-level score by aggregating the likelihood scores across all possible alleles (see Methods). The score represents the likelihood of a gRNA to induce a given mutation type (see Figure~\ref{fig:crisprbe}c, left plot). 
+
+To show how our gRNA annotations can be used to understand the phenotypic effects observed in screening data, we obtained data from a negative selection pooled screen performed in MelJuSo using a base editing library tiling the \textit{BRCA1} gene \citep{hanna2021massively}. Given that loss-of-function mutations in \textit{BRCA1} reduce cell fitness \citep{findlay2018accurate}, gRNAs introducing nonsense mutations are expected to drop out. We created Receiver Operating Characteristic (ROC) curves to measure how well gRNA dropout can separate positive controls from other gRNAs. We used LFCs in gRNA abundance between the later time point and the plasmid DNA (pDNA) library as a measure of gRNA dropout (see Methods). We used several thresholds of the nonsense mutation score to label gRNAs as positive controls or not. We observed that gRNA dropout in the screen can separate positive controls well from all other gRNAs, and that performance is improved when using positive controls defined by higher nonsense mutation scores (Figure~\ref{fig:crisprbe}c). 
+
+
+We also characterized gRNAs for off-targeting effects using \textit{crisprBowtie}, added sequence features using \textit{crisprDesign}, and added on-target scores using \textit{crisprScore}. We asked whether or not the magnitude of gRNA dropout in the screen associates with predicted on-target activity for the SpCas9 nuclease. In Figure~\ref{fig:crisprbe}d, we show gRNA dropout as a function of different predicted gRNA efficacy scores: Rule Set 1, Azimuth, and DeepHF.  gRNAs predicted to induce nonsense mutations are shown in red, and grey otherwise. Despite the fact that each algorithm was trained on data using a SpCas9 nuclease with intact endonuclease activity, gRNA dropout and predicted gRNA efficacy correlate for all methods ($r = -0.30$ for Rule Set 1, $r =  -0.20$ for Azimuth, and $r = -0.17$ for DeepHF). Overall, the different functionalities implemented in our ecosystem provides a set of informative annotations for base editor gRNAs and facilitate the interpretation of experimental data obtained from base editor screens.
+
+
+
+%%% Figure CRISPRbe
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{analyses/crisprbe/figures/crisprbe.pdf}
+  \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{BRCA1} using the base editor BE4max.}
+On the left: schematic showing the major steps involved in designing BE4max gRNAs targeting \textit{BRCA1}.
+Two inputs are required: DNA sequences of \textit{BRCA1} exons and a 
+\textit{BaseEditor} object from \textit{crisprBase}. 
+   \textbf{a} Editing weights for the BE4max base editor from \textit{crisprBase}.   
+   \textbf{b} 10 top predicted edited alleles for one selected gRNA as returned by \textit{crisprDesign}. The wildtype allele and the protospacer sequence are positioned at the top of the first column, with the PAM sequence highlighted in bold. Edited nucleotides are highlighted in red (C to T) and blue (C to G). Editing scores, variant annotations, and protein product of the edited alleles are also shown.
+   \textbf{c} On the left, gRNA-level nonsense mutation score as calculated by \textit{crisprDesign}. Colors represent variant classification: nonsense in red, missense in blue, silent in grey. The size of the dot is proportional to the on-target efficiency \textit{DeepHF} score. On the right, ROC curves for classifying gRNA mutation type (nonsense or not) based on gRNA dropout from the \textit{BRCA1} BE4max dataset (see Methods). Different thresholds of the nonsense score were used to label a gRNA as nonsense or not.  \textbf{d} Relationships between gRNA dropout from the \textit{BRCA1} BE4max dataset and several on-target activity scores.
+ gRNAs that are not predicted to induce a nonsense mutation are colored in grey, and the size of the dots is proportional to the magnitude of the mutation score. The horizontal dotted lines at -0.5 represent a cutoff to classify a gRNA as active or not. For each method, a score cutoff was determined to classify active versus non-active gRNAs (vertical dotted line). Red and blue dots correspond to gRNAs that are correctly and incorrectly classified, respectively. }
+  \label{fig:crisprbe}
+\end{figure}
+
+
+
+% CasRx
+\subsection{Annotating and scoring gRNAs for gene knockdown using CasRx}
+
+One of the challenges in designing gRNAs specific to RNA-targeting nucleases is to enable on-target and off-target characterization to be performed in a transcriptome space, as opposed to a reference genome. This requires strand-specific functionalities, transcriptome-specific alignment indexes, as well as additional gene annotation functionalities to capture isoform-specific targeting.  
+
+Here, we describe a workflow for designing gRNAs targeting \textit{CD46} and \textit{CD55} using the RNA-targeting nuclease CasRx (RfxCas13d) \citep{cas13d} (Figure~\ref{fig:casrx}).
+The workflow takes into consideration the aforementioned issues. To validate our design process, we obtained CasRx pooled screening data performed in HEK 293 cells with gRNA libraries tiling the human genes \textit{CD46} and \textit{CD55} from \citet{wessels2020massively}. Since both genes encode for cell-surface proteins, the authors used fluorescence-activated cell sorting (FACS) to sort cells with high and low expression. Their data can be used to investigate gRNA knockdown efficacy based on the change in relative abundance of high- and low-expressing cells for each targeted gene (see Methods). 
+
+We first extracted mRNA sequences of both genes using the function \textit{getMrnaSequence} from \textit{crisprDesign}. 
+The mRNA sequences, together with the \textit{CrisprNuclease} object CasRx from \textit{crisprBase}, served as inputs to create a \textit{Guideset}.
+Next, we predicted on-target activity of the gRNAs using our implementation of the CasRx-RF method \citep{wessels2020massively} available in \textit{crisprScore} (see Methods). The normalized LFCs in the screen correlate well with the CasRx-RF score (Figure~\ref{fig:casrx}a). We then added a transcript annotation to each gRNA using an Ensembl \textit{TxDb} object as input. This adds a list of targeted isoforms to each gRNA, as well as transcript context (CDS, $5^{\prime}$UTR, or $3^{\prime}$UTR). We observed in the screen that gRNAs targeting a higher number of isoforms, and gRNAs located in CDS, lead to higher activity (Figure~\ref{fig:casrx}b, and Figure~\ref{suppfig:casrxlong}). 
+
+We performed an off-target search using \textit{crisprBowtie} to the human transcriptome by providing a \textit{Bowtie} index built on mRNA sequences.
+We extended the CFD off-target scoring algorithm implemented in \textit{crisprScore} to work with CasRx by estimating mismatch tolerance weights on the GFP tiling screen data from \citet{wessels2020massively} (see Methods). The off-target CFD-CasRx score performs well at predicting gRNA activity of single-mismatch and double-mismatch gRNAs in the \textit{CD55} screen (Figure~\ref{fig:casrx}c, and see Methods).  
+
+Finally, we added sequence features, and ranked gRNAs for targeting \textit{CD55} and \textit{CD46} based on (1) high on-target score, (2) low number of off-targets, and (3) high number of targeted isoforms. If we select gRNAs that target a common exon and that have high on-target score, we enrich for highly active gRNAs in the screening data (Figure~\ref{fig:casrx}d). 
+
+
+
+
+
+%%% Figure CRISPR-CasRx
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{analyses/casrx/sanjana/figures/casrx.pdf}
+  \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{CD55} and \textit{CD46} using CasRx.} 
+  On the left: schematic showing the major steps involved in designing CasRx gRNAs targeting \textit{CD55} and \textit{CD46}.
+Two inputs are required: mRNA sequences of \textit{CD55} and \textit{CD46} and a 
+\textit{CrisprNuclease} object from \textit{crisprBase}. 
+\textbf{a} Relationship between on-target CasRx-RF score calculated in \textit{crisprScore} and LFCs from the pooled FACS tiling CasRx screening data (see Methods). A higher LFC indicates higher gRNA activity.
+\textbf{b} Relationship between LFCs from the CasRx screening data and gRNA context for \textit{CD46} and \textit{CD55}: gRNAs targeting 5$^\prime$ UTR and 3$^\prime$ UTR for the canonical transcript, and guides targeting a low and high number of isoforms for each of the genes. gRNAs targeting more isoforms show higher enrichment in the screening data. The full isoform annotation is stored in the \textit{GuideSet} objects.
+\textbf{c} Left: relationship between observed LFCs of on-target gRNAs in the \textit{CD55} screen and predicted LFCs of single-mismatch gRNAs using the off-target CFD-CasRx score implemented in \textit{crisprScore} (see Methods). Right: same as left, but for double-mismatch gRNAs.
+\textbf{d} gRNAs selected in the \textit{CD46} screen for high on-target activity (CasRx-RF score) and targeting a common exon across all protein-coding isoforms enrich for high gRNA activity. }
+  \label{fig:casrx}
+\end{figure}
+
+
+
+
+
+
+% CRISPRa
+\subsection{Designing optimal gRNAs to activate \textit{MMP7} using CRISPRa using different nucleases}
+
+Designing gRNAs for either CRISPRa and CRISPRi applications requires additional considerations. This includes choosing an optimal target region based on chromatin accessibility data and TSS data, and selecting gRNAs based on their positioning with respect to the TSS. 
+
+To demonstrate the utility of our ecosystem functionalities for CRISPRa and CRISPRi, we designed gRNAs for CRISPRa using the human gene \textit{MMP7} as an example target (Figure~\ref{fig:crispra}). CRISPRi is discussed at the end of this section. One CRISPRa-specific design consideration is the limited number of candidate gRNAs available for a given gene due to the narrow window of optimal activation. 
+Engineered nucleases with less constrained PAM sequences can improve CRISPRa applicability by expanding the set of candidate gRNAs. 
+To investigate this, we designed gRNAs for the promoter region of \textit{MMP7} using four nucleases in parallel: SpCas9, AsCas12a, and the more PAM-flexible versions SpGCas9 \citep{spg} and enAsCas12a \citep{enpamgb}. 
+
+The first step of the gRNA design was to specify the target region for \textit{MMP7}. 
+We used \textit{AnnotationHub} to find CAGE peaks in the promoter region of \textit{MMP7} to specify the TSS position. We used the CAGE data to identify TSSs instead of RefSeq or Ensembl as the former provides more accurate annotations for designing CRISPRi and CRISPRa gRNAs \citep{radzisheuskaya2016optimizing}.
+The 5$^\prime$ end of the CAGE peak was used as the TSS to define the coordinates of the optimal window of activation (75 and 150 nucleotides upstream of the TSS, as recommended by \citet{sanson2018optimized}). 
+
+Next, we designed all possible gRNAs for the four nucleases using the \textit{findSpacers} function in \textit{crisprDesign}, and stored the gRNAs in four separate \textit{GuideSet} containers. We annotated each \textit{GuideSet} for overlap with DNase I hypersensitivity sites (DHS) from consolidated epigenomes from the Roadmap Epigenomics Project \citep{kundaje2015integrative} using \textit{AnnotationHub}. Open-chromatin regions are favorable for the binding of the catalytically inactive Cas9 (dCas9) used in both CRISPRa and CRISPRi \citep{kuscu2014genome,wu2014genome}. We then added sequence features using \textit{crisprDesign}, on-target scores using \textit{crisprScore}, and off-target sites using \textit{crisprBowtie} for each nuclease. Finally, we added overlapping SNPs information using the \textit{addSNPAnnotation} function and using dbSNP151. The end-to-end workflow is presented in Figure~\ref{fig:crispra}a.
+
+The designed gRNAs are presented in Figure~\ref{fig:crispra}b. 
+With \textit{crisprDesign}, it is straightforward to select candidate gRNAs in the most promising genomic regions - in this case, lying inside both the annotated DHS and the optimal activation window for MMP7. One can immediately appreciate that both nuclease variants (SpGCas9 and enAsCas12a) yield substantially more available gRNAs in the optimal window activation. In particular, enAsCas12a offers several gRNAs with high predicted on-target activity, making it a better candidate for gene activation of \textit{MMP7}. One SNP was also found in the region of interest, and overlapping one gRNA for enAsCas12a that should should be avoided. Altogether, our ecosystem provides an easy and comprehensive workflow to enable users to design optimal gRNAs for CRISPRa across nucleases. 
+
+
+
+%%% Figure CRISPRa
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{analyses/crispra/figures/crispra_final.pdf}
+  \caption{\textbf{Design of CRISPRa gRNAs for human gene \textit{MMP7} for different CRISPR nucleases.} 
+  \textbf{a} Schematic showing the steps involved in designing CRISPRa gRNAs targeting the promoter region of \textit{MMP7}.
+A gene model and a list of CAGE peaks are used to define the optimal window for gene activation. 
+A \textit{GuideSet} is created separately for each CRISPR nuclease.
+DNase I hypersensitive site (DHS) information is obtained from \textit{AnnotationHub} and added to the gRNA annotation.
+\textbf{b} The top track shows the promoter region of human gene \textit{MMP7} on chromosome 11, including part of the 5$^\prime$ UTR of \textit{MMP7} (yellow). 
+The DHS and CAGE peak grey boxes were obtained using \textit{AnnotationHub} (see Methods). 
+The light pink region corresponds to the optimal region of activation based on \citet{sanson2018optimized}, corresponding to a region [75,150]bp upstream of the  $5^\prime$ end of the CAGE peak. For each of the four selected nucleases, all canonical PAM sites located within the optimal region are shown. PAM sites are colored by their on-target score: DeepHF for SpCas9, DeepCpf1 for AsCas12a, and enPAM+GB for enAsCas12a. No on-target scoring algorithm was available at time of publication for SpGCas9. The last track corresponds to common SNPs obtained from dbSNP151. 
+  }
+  \label{fig:crispra}
+\end{figure}
+
+
+% CRISPRi
+Designing gRNAs for CRISPRi applications using \textit{crisprDesign} is nearly identical, with the exception that the preferred target region for interference is located downstream of the TSS. The CRISPRai scoring algorithm from \citet{crispria}, available through \textit{crisprScore}, can be used to select optimal gRNAs for each TSS separately, taking into account both gRNA positioning and sequence content to maximize on-target inhibition. For both CRISPRa and CRISPRi, our gRNA design workflow is also applicable to non-coding regulatory elements, for instance long non-coding RNAs (lncRNAs) as it was done in \citet{liu2017crispri}. Overall, \textit{crisprDesign} provides end-to-end functionalities that are well-suited for a large array CRISPRa and CRISPRi applications.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%          DISCUSSION              %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}
+
+
+% Overview
+In this work, we introduced a new suite of R packages to perform comprehensive end-to-end gRNA design for a multitude of CRISPR technologies and applications. Our ecosystem enables users to perform gRNA design for diverse nucleases such as PAM-free nucleases and RNA-targeting nucleases, and for several applications beyond CRISPRko such as RNA and DNA base editing and CRISPRa/i. All design functionalities are available from a single package, \textit{crisprDesign}. This eliminates the need to use multiple tools to obtain the necessary information for selecting optimal gRNAs, which is both time consuming and error prone. We demonstrated the diversity of our framework by applying it in three case studies involving different CRISPR technologies with their own specific design considerations. 
+
+% What we showed in the paper
+We were able to show that creating rich gRNA annotations can help investigate gRNA variability and biases observed in experimental data generated from newer CRISPR technologies. To do so, we obtained public pooled screening data from two published studies, a tiling base editor screen of \textit{BRCA1}, and a tiling CasRx screen of \textit{CD46} and \textit{CD55}, and show how some of the gRNA features derived from \textit{crisprDesign} can explain some of the variability in gRNA activity observed in both screens. 
+
+
+
+The modular architecture of \textit{crisprDesign} enables nucleases, base editors, scoring methods and annotations to be combined depending on the needs of the user. As a result, our design framework can easily adapt to new CRISPR technologies by swapping out the necessary components. For instance, a recent study has shown that the resolution of base editor screens can be greatly increased by combining existing base editors with PAM-extended Cas9 variants \citep{sangree2021benchmarking}, while another study shows that RNA-targeting Cas13 nucleases can be combined with deaminases to form RNA base editors \citep{rnaediting1}. Both applications can be readily supported by our ecosystem without the need for further development. 
+
+
+% Bioc
+Our ecosystem is completely implemented within the Bioconductor project, which provides robust and feature-rich data structures, high-quality documentation and workflows, and seamless interoperability between packages. Data structures defined in \textit{crisprBase} can be reused to facilitate the analysis of CRISPR-based editing events in other packages, such as \textit{ampliCan} \citep{labun2019accurate}, 
+\textit{GUIDEseq} \citep{zhu2017guideseq} and \textit{CrisprRVariants} \citep{lindsay2016crisprvariants}. \textit{GuideSet} gRNA containers can be integrated with packages that provide analysis workflows for pooled screening data  \citep{wang2019integrative, imkeller2020gscreend, gcrisprtools} to investigate biases and filter out undesirable gRNAs. Finally, the \textit{crisprBowtie} and \textit{crisprBwa} packages provide general functions that can be used to map any short sequences, including small-hairpin RNAs and short-interfering RNAs. We are continuously extending our suite of tools to make available the latest developments for gRNA design, such as prime editing \citep{primeediting} and combinatorial libraries \citep{replogle2020combinatorial}
+ 
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%               Methods              %%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+
+
+
+% Reference genomes
+\subsection*{Reference genomes, gene models, and genome indexes}
+
+The FASTA file for the human reference genome (GRCh38.p13 assembly) was obtained from UCSC to build \textit{Bowtie} and \textit{BWA} indexes via the \textit{Rbowtie} (v1.37) \citep{hahne2012rbowtie} and \textit{Rbwa} (v1.1) R packages, respectively. The packages use Bowtie v1.3 and BWA Release 0.7.17, respectively. 
+The gene model used throughout the manuscript was obtained from Ensembl (release 104) using the R package \textit{GenomicFeatures} (v1.49.6).
+Common SNPs were obtained from NCBI dbSNP build 151 (\url{https://ftp.ncbi.nlm.nih.gov/snp/}).
+
+% CAGE
+\subsection*{CAGE peak and DNAse I hypersensitivity data}
+
+RIKEN/ENCODE CAGE peaks were obtained from \textit{AnnotationHub} (v3.5) using accession number AH5084 \citep{djebali2012landscape}. Genomic coordinates were lifted over from hg19 to hg38 using the R package \textit{rtracklayer} (v1.57). DNAse I hypersensitive sites were obtained from \textit{AnnotationHub} using accession number AH30743. The narrow DNase peaks were obtained using MACS2 on consolidated epigenomes from the Roadmap Epigenomics Project (\texttt{E116-DNase.macs2.narrowPeak.gz}) \citep{kundaje2015integrative}. Genomic coordinates were lifted over from hg19 to hg38 using the R package \textit{rtracklayer}.
+
+
+% On-target scoring
+\subsection*{On-target scoring}
+
+We implemented several commonly-used algorithms for Cas9, Cas12 and Cas13 nucleases in \textit{crisprScore}.
+For predicting on-target activity of the wildtype SpCas9 nuclease, we implemented the popular Rule Set 1 \citep{doench2014rational} and \textit{Azimuth} algorithms \citep{azimuth} (iteration of the popular Rule Set 2 algorithm by the same authors), and the sequence-only Rule Set 3 \citep{ruleset3}. The package also provides the deep learning-based algorithms \textit{DeepWT} and \textit{DeepHF}, developed to predict cutting efficiency of the wildtype SpCas9 and SpCas9-High Fidelity (SpCas9-HF1) nucleases, respectively \citep{deepcas9}, \rev{and the \textit{DeepSpCas9} algorithm \citep{deepspcas9}.} We also included the \textit{CRISPRscan} algorithm \citep{crisprscan} for predicting on-target activity of SpCas9 gRNAs expressed from a T7 promoter, \rev{as well as the \textit{CRISPRater} algorithm \citep{crisprater}.} For the wildtype AsCas12a, \textit{crisprScore} offers the deep-learning based prediction method DeepCpf1 \citep{deepcpf1}. For the enhanced AsCas12a (enAsCas12a), \textit{crisprScore} offers the \textit{enPAM+GB} algorithm \citep{enpamgb}. For CasRx (RfxCas13d), we adapted the code from the random forest model developed in \citet{wessels2020massively}; we referred to the method as \textit{CasRx-RF}.
+
+For predicting gRNA activity for CRISPRa and CRISPRi, we implemented the prediction method used to design the commonly-used Weissman CRISPRa and CRISPRi v2 genome-wide libraries for human and mouse \citep{crispria}.
+This method predicts CRISPRa (or CRISPRi) gRNA activity based on the distance to the transcription starting site (TSS), spacer sequence-derived features, as well as chromatin accessibility data and nucleosome positioning using DNase-Seq, MNase-Seq, and FAIRE-Seq data. The chromatin data in hg38 coordinates are available on Zenodo (DOI: 10.5281/zenodo.6716721).
+
+\rev{The function \textit{addCompositeScores} from \textit{crisprDesign} creates an aggregate score from a specified list of on-target scoring methods. It takes the average of the specified scores after performing a rank transformation. More specifically, consider $s_{ij}$ to be the score value for gRNA $i$ and method $j$. The composite score $S_{i}$ for gRNA $i$ is
+
+\begin{equation}
+S_{i} = \frac{\sum_{j = 1}^N \text{rank}(s_{ij})}{N}
+\end{equation}
+
+where $N$ is the total number of user-specified on-target scoring methods, and $\text{rank}(s_{ij})$ is the ranked score within method $j$. Importantly, if the number of missing values varies across on-target scoring methods, we ensure that the scale of the rank-transformed values are comparable across methods by simply scaling the ranks so that highest ranked value is equal across all methods. Missing values are uncommon but can happen when designing gRNAs targeting custom sequences. Indeed, several scoring algorithms require nucleotide context around the protospacer sequences, and this is not possible for gRNAs located near the end of the user-provided custom sequences. 
+
+}
+% Lindel
+\subsubsection*{On-target prediction of frameshift-causing indels using \textit{Lindel}}
+
+In \textit{crisprScore}, we implemented \textit{Lindel} {\citep{lindel}, a logistic regression model that was trained to use local sequence context to predict the distribution of mutational outcomes for CRISPR/Cas9. The \textit{Lindel} final score reported in \textit{crisprScore} is the proportion of ``frameshifting" indels, that is the frequency of indels predicted to introduce frameshift mutations. By chance, assuming a random distribution of indel lengths, gRNAs should have a frameshifting proportion of 0.66. A \textit{Lindel} score higher than 0.66 indicates that a given gRNA is more likely to cause a frameshift mutation than by chance. 
+
+
+
+
+% Off-target scoring
+\subsection*{Off-target scoring of individual off-targets}
+
+The exact formula that we use to calculate the CFD score in \textit{crisprScore} is
+
+\begin{equation}
+\text{CFD} = \prod_{p \in M}{w_p}(x_{\text{RNA}},x_\text{DNA})
+\end{equation}
+
+where $M$ is the set of positions for which there is a mismatch between the gRNA spacer sequence and the off-target sequence.
+$w_p(x_{\text{RNA}},x_\text{DNA})$ is an experimentally-derived mismatch tolerance weight at position $p$ depending on the RNA nucleotide $x_{\text{RNA}}$ and the DNA nucleotide $x_{\text{DNA}}$ (see \citet{doench2016optimized} for more details).
+
+
+The exact formula that we use to calculate the MIT score in \textit{crisprScore} was obtained from the MIT design website (\url{crispr.mit.edu}):
+
+
+
+\begin{equation}
+\text{MIT} = \biggl(\prod_{p \in M}{c_p}\biggr)\times\frac{1}{\frac{\rev{L}-d}{\rev{L}}\times4+1}\times\frac{1}{m^2}
+\end{equation}
+
+where $M$ is the set of positions for which there is a mismatch between the gRNA spacer sequence and the off-target sequence, $c_p$ is an experimentally-derived mismatch tolerance weight at position $p$, $d$ is the average distance between mismatches, $m$ is the total number of mismatches, \rev{and $L$ is the spacer length}.  \rev{The spacer length used in \citet{mit} is 19.} As the number of mismatches increases, the cutting likelihood decreases. 
+
+%Composite off-target score for gRNA specificity}
+\subsection*{Composite off-target score for gRNA specificity}
+
+To create a gRNA-level composite specificity score, individual off-target cutting scores are aggregated using the following inverse summation formula:
+\begin{equation}
+\text{Specificity} = \frac{1}{1+\sum_{i=1}^n\text{C}_i}
+\end{equation}
+
+where $\text{C}_i$ is the cutting likelihood score (either using the MIT or the CFD method) for the $i^{\text{th}}$ putative off-target. A higher composite score indicates higher specificity, which decreases with more off-targets and/or a greater likelihood of cleavage at each off-target. A gRNA with no putative off-targets have a composite score of 1. A gRNA with 2 on-targets, that is a gRNA targeting two genomic loci with perfect complementarity, will have a composite score of 0.5. 
+
+
+
+\rev{
+% Conservation scores
+\subsection*{Evolutionary conservation scores}
+
+The function \textit{addConservationScores} in \textit{crisprDesign} annotates gRNAs with evolutionary conservation scores. It requires bigWig files containing basewise conservation scores, which can be easily obtained from the UCSC genome browser database \citep{ucsc} at the following link: \url{https://hgdownload.soe.ucsc.edu/downloads.html}. The gRNA score is calculated as the average conservation score of a region centered around the predicted cut site of the gRNA. By default, the width of the region is 18 nucleotides, but can be changed by users. The width of the regiUsers can specify the width of the region is  For our analysis of human protein-coding genes, we used the phyloP score from an alignment of 29 genome sequences to the human genome available at \url{https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP30way/}. Positive phyloP scores indicate conserved regions, while negative scores indicate evolution faster than expected under neutral drift. 
+}
+
+
+% Scoring base editing
+\subsection*{Base editing scoring}
+
+
+The behavior of a base editor can be quantified in a 3-dimensional array of editing probabilities. Let $p$ be the genomic position relative to the PAM site; let $nuc_u$ be the original nucleotide; and let $nuc_e$ be the edited nucleotide. Denote $q(p, nuc_u, nuc_e)$ as the probability that $nuc_u$ is edited to $nuc_e$ at position $p$. Experimental editing weights can be used, possibly after some adequate transformation, to obtain those probabilities. 
+
+To score the likelihood of each edited allele, we assume independence of editing events with respect to nucleotide position. Specifically, consider a wildtype allele $U=(u_{p_1}, u_{p_2}, ..., u_{p_n})$ and an edited allele $V=(v_{p_1}, v_{p_2}, ..., v_{p_n})$, where $u_{p_i}$  and $v_{p_i}$ are the nucleotides at position $p_i$ relative to the PAM site for the wildtype and edited allele, respectively. The parameter $n$ is chosen by the user, and should be large enough so that all nucleotides within the editing window of the chosen base editor are represented.  We calculate the editing score for the edited allele $V$ (with respect to the wildtype allele $U)$ as follows:
+
+\begin{equation}
+S(U,V) = \prod_{i=1}^n q({p_i}, u_{p_i}, v_{p_j})
+\end{equation}
+
+For a given edited allele $V$, we classify the functional consequence of editing as either a silent, missense, or nonsense mutation. We use $f(V)$ to label the mutation. In case an edited allele results in more than one mutation, we choose the most consequential mutation as the label (nonsense over missense, and missense over silent). For a given gRNA targeting the wildtype allele $U$,  and the set of all possible edited alleles ${V_j}$, we calculate an aggregated score for each mutation type by summing the editing scores across alleles for each mutation type. For instance, the aggregated score for silent mutations is calculated as follows:
+
+\begin{equation}
+S_{silent}(U) = \sum_{j=1}^N S(U,V_j) \mathbf{1}(f(V_j)=\text{silent})
+\end{equation}
+
+where $N$ is the total number of possible edited alleles $V_j$. 
+
+
+
+% Creation of major and minor allele human genomes
+\subsubsection*{Creation of major and minor allele human genomes}
+
+We built major and minor allele genomes for the hg38 build using common SNPs from the dbSNP151 RefSNP database. The ``common" category is based on germline origin and a minor allele frequency (MAF) of $>=0.01$ in at least one major population, with at least two unrelated individuals having the minor allele. See the dbSNP website \url{https://www.ncbi.nlm.nih.gov/variation/docs/human_variation_vcf/} for more information. We excluded indels, and only considered SNPs that have MAF greater than 1\% in the 1000 Genomes Project population. We then injected major alleles and minor alleles into the reference genome hg38 sequence to create ``major allele" and ``minor allele" genomes, respectively. Both resulting genomes are provided as standard FASTA files. We generated \textit{Bowtie} and \textit{BWA} indexes for the two genomes. All results files are available on Zenodo (DOI: 10.5281/zenodo.6862556). The two allele genomes are also available from Bioconductor via their respective packages:
+
+\begin{itemize}
+\item \texttt{BSgenome.Hsapiens.UCSC.hg38.dbSNP151.major} \citep{bsgenome_major}
+\item \texttt{BSgenome.Hsapiens.UCSC.hg38.dbSNP151.minor} \citep{bsgenome_minor}
+\end{itemize}
+
+
+% Base editing data
+\subsection*{Base editing pooled screen data analysis}
+
+Fitness screen data in the MelJuSo cell line using a gRNA library tiling \textit{BRCA1} were obtained from the supplementary material of \citet{hanna2021massively}. We normalized the raw counts by scaling by the total number of reads, and log$_2$-transformed the data. We filtered out low-abundance gRNAs that were further than 3 standard deviations below the mean in the plasmid (pDNA) sample. From the later timepoint samples, we subtracted from the pDNA sample log counts to obtain LFCs, and averaged the LFCs across replicates. We filtered out gRNAs targeting multiple loci, and gRNAs with off-targets (with up to 2 mismatches) located in genes other than \textit{BRCA1}.  
+
+
+
+
+% CasRx pooled screen data
+\subsection*{CasRx pooled screen data analysis}
+
+CasRx FACS pooled screening data tiling \textit{CD55}, \textit{CD46} and \textit{GFP} were obtained from \citet{wessels2020massively}, including processed and normalized LFCs for each gRNA \url{https://gitlab.com/sanjanalab/cas13}. We redesigned all possible gRNAs targeting any of the isoforms of \textit{CD55} and \textit{CD46} using \textit{crisprDesign}, and considered only gRNAs also present in the pooled screening data for downstream analyses. We annotated all gRNAs with gene information (Ensembl release 104) and obtained off-targets with up to 3 mismatches for all gRNAs using \textit{crisprBowtie}. 
+We obtained CasRx-RF on-target activity scores using \textit{crisprScore}. 
+The transcripts annotated as canonical by Ensembl (ENST00000367042 for \textit{CD46}, and ENST00000367064 for \textit{CD55}) were used to visualize LFCs. 
+
+For each gRNA, we quantified the abundance of its target gene by summing transcript per million (TPM) counts in HEK-293 cells for all transcripts targeted by the gRNA. Transcript-level RNA quantification for HEK-293 cells was obtained from the Protein Atlas web portal \url{https://www.proteinatlas.org},
+on March 5 2022. Data are based on The Human Protein Atlas version 21.0 and Ensembl version 103 .
+We averaged TPM counts across the two replicates. 
+
+We used the single-mismatch (SM) gRNA constructs from the GFP tiling screen to estimate position-dependent probabilities of mismatch tolerance by the CasRx nuclease. To do so, we first calculated differences in LFC $(\Delta$LFC) between SM gRNAs and their corresponding perfect-match (PM) gRNAs. We then fitted a LOESS curve with respect to the nucleotide position to obtain an average $\Delta$LFC at each spacer position (Figure~\ref{suppfig:casrx}a). We transformed the LOESS fitted values to a scale between 0 and 1 to represent them as percentages of activity with respect to the median activity of the PM gRNAs tiling GFP (Figure~\ref{suppfig:casrx}b). Given the sparsity of the data, specifying a nucleotide-specific weight at each position was not possible. We adapted in \textit{crisprScore} the CFD off-targeting scoring method to CasRx by using those probabilities as scoring weights. The corresponding scoring algorithm is named CFD-CasRx. 
+
+To evaluate the performance of the CFD-CasRx score on an independent dataset, we calculated CFD-CasRx off-target scores on all SM and double-mismatch (DM) gRNAs included in the \textit{CD55} tiling screen. To predict LFCs of the DM gRNAs, we multiplied their respective PM gRNA LFCs with the CFD-CasRx on-target scores. 
+
+
+% Off-target search comparison within crisprDesign
+\subsection*{Evaluation of the off-target alignment methods within \textit{crisprDesign}}
+
+For comparing runtimes of the off-target alignment methods, the following sets of gRNAs were chosen:  (1) gRNAs targeting the coding sequence of \textit{KRAS}, for a total of 52 gRNAs; (2) gRNAs targeting the coding sequence of \textit{EGFR}, for a total of 645 gRNAs, and (3) gRNAs targeting the coding sequence of \textit{ZNF101}, for a total of 152 gRNAs. The \textit{KRAS} and \textit{EGFR} cases represent small- and medium-sized sets of gRNAs. For \textit{ZNF101}, a few gRNAs overlap a repeat element, and therefore have a high number of on- and off-targets. Alignment was performed to the GRCh38.p13 genome. The \textit{Bowtie} and \textit{Biostrings} alignment methods were evaluated using 0 to 3 mismatches, and the BWA alignment methods were evaluated using 0 to 5 mismatches. Run times were collected on a Macbook Pro with an Intel Core i7 CPU (2.6GHz, 6 cores, 16 GB memory).
+
+
+\rev{
+% Off-target search comparison across tools
+\subsection*{Comparison of off-target alignments across tools}
+
+We compared computing times for designing SpCas9 gRNAs and performing a genome-wide off-target search for the following tools: \textit{CCTop}, \textit{CHOPCHOP}, \textit{multicrispr}, \textit{FlashFry}, and \textit{crisprDesign}. The following tools were excluded from the comparison: \textit{CRISPick} as it does not provide a standalone software; \textit{CRISPRseek} as we were not able to complete the search within a reasonable time; \textit{Cas-Designer} due to its requirement for specialized software that we were not able to install on our machines; \textit{E-CRISP} as it was not possible to run their command line interface on customs DNA sequences or exons. 
+
+To perform the comparison, we generated six random subsets of protein-coding exons located on chr1 with the following sizes:100, 200, 400, 800, 1600 and 3200 exons.
+Off-target alignment was performed against the human reference genome (GRCh38 build) using a maximum of 2 mismatches for all methods.  Run times were collected on a Macbook Pro with an Intel Core i7 CPU (2.6GHz, 6 cores, 16 GB memory). For each tool, parameters optimized for speed were chosen based on available documentation. In particular, the following parameters were used. For \textit{CCTop}, we used \texttt{--totalMM 2 --coreMM 2 --maxOT 100000}. For \textit{CHOPCHOP}, we used: \texttt{--fasta -G HG38 -t WHOLE -v 2}. For \textit{FlashFry}, we used: \texttt{--maximumOffTargets 100000 --forceLinear --maxMismatch 2}. For \textit{multicrispr}, we used Bowtie with 2 mismatches, with no on-target scoring. For \textit{crisprDesign}, we used the function \textit{addSpacerAlignmentsIterative} with the \textit{Bowtie} and \textit{BWA} aligners with 2 mismatches. 
+}
+
+
+% Genome-wide screens
+\rev{
+\subsection*{Processing of genome-wide screen datasets}
+
+\textit{Achilles dataset:} CRISPRko fitness screening gRNA-level LFCs from Project Achilles (22Q2 release) were downloaded from the DepMap portal \url{https://depmap.org/portal/download/all/}. Processed LFCs representing changes in gRNA abundances between the last time point of the fitness screen and the plasmid DNA were available for 957 human cell lines. Reference lists of essential and non-essential genes were downloaded from \citet{hart2014}.
+For each cell line, we first centered LFCs using the median value of the set of non-essential genes, and then scaled LFCs using the median value of the set of essential genes. This enables normalized LFCs to be comparable across cell lines. For each gRNA, we then summarized gRNA activity by averaging LFCs across cell lines. 
+
+\textit{Hart2015 dataset:} Processed data from a genome-wide screen performed in HCT116 cells  using the Toronto Knockout v1 (TKOv1) library \citep{toronto1} were downloaded from \url{http://tko.ccbr.utoronto.ca/}. We computed LFCs between Day 18 and Day 0. 
+
+\textit{Hart2017 dataset:} Processed data from a genome-wide screen performed in HAP1 cells using the Toronto Knockout v3 (TKOv3) library \citep{toronto3} were downloaded from \url{http://tko.ccbr.utoronto.ca/}. We obtained available LFCs between Day 18 and Day 0.
+
+ \textit{Wang2015 dataset:} Processed data from a genome-wide screen performed in K562 cells were obtained from the supplementary material of \citet{sabatini}. LFCs were calculated between the final and initial timepoints. 
+
+\textit{Tzelepis2016 dataset:} Processed LFCs from a genome-wide screen performed in HL60 cells were obtained from the supplementary material of \citet{yusa}. 
+
+LFCs for the Hart2015, Hart2017, Wang2015 and Tzelepis2016 were further standardized using the approach used for the Achilles dataset, with the same sets of non-essential and essential genes. For each dataset, gRNAs were mapped to the set of human protein-coding genes found in the Ensembl release 104, and unmapped gRNAs were filtered out. Given that gRNAs with multiple on- and off-targets can confound the analysis of fitness screens \citep{fortin2019}, we removed gRNAs that map to multiple loci in the GRCh38 genome, as well as gRNAs with 1- and 2-mismatch off-targets located in coding regions other than the intended target. The final numbers of gRNAs further considered for analysis are presented in Table~\ref{tab:screens}.
+}
+
+
+
+
+
+% crisprDesign rankings
+\rev{
+\subsection*{Default gRNA rankings implemented in \textit{crisprDesign}}
+
+For each nuclease, we rank gRNAs based on several rounds of priority. For SpCas9, gRNAs with unique target sequences and without one- or two-mismatch off-targets located in coding regions are placed into the first round. Then, gRNAs with a small number of one- or two-mismatch off-targets (less than 5) are placed into the second round. Remaining gRNAs are placed into the third round. Finally, any gRNAs overlapping a common SNP (human only), containing a polyT stretch, or with extreme GC content (below 20\% or above 80\%) are placed into the fourth round. For CRISPRko applications, within each round of selection, gRNAs targeting the first 85\% of the coding sequence of the canonical Ensembl isoform, as well as gRNAs targeting conserved regions (phyloP conservation score greater than 0), are prioritized first. gRNAs with the same priority are then ranked by a composite on-target activity rank to further prioritize active gRNAs. Based on the consistently reliable performance performance and generalization of the methods \textit{DeepHF} and \textit{DeepSpCas9} shown in \citet{konstantakos2022crispr,deepcas9,deepspcas9}, 
+the composite on-target activity rank is calculated by taking the average rank across the \textit{DeepHF} and \textit{DeepSpCas9} scores. For CRISPRa and CRISPRi applications, the CRISPRai on-target score is used instead of the composite score. 
+
+The process is identical for enAsCas12a, with the exception that the \textit{enPAM+GB} method is used as the composite score given that it is the only method available for the enAsCas12a nuclease. For CasRx, gRNAs targeting at least 75\% of the isoforms of a given gene, with no one- or two-mismatch off-targets, are placed into the first round. gRNAs targeting at least 50\% of the isoforms of a given gene, with no one- or two-mismatch off-targets, are placed into the second round, and remaining gRNAs are placed into the third round. Finally, any gRNAs containing a polyT stretch, or with extreme GC content (below 20\% or above 80\%) are placed into the fourth round. Within each round of selection, gRNAs are further ranked by the \textit{CasRxRF} on-target score, using the canonical Ensembl isoform for scoring.
+}
+
+
+% Tools 
+\rev{
+\subsection*{Generation of gRNA rankings from other tools}
+
+In addition to \textit{crisprDesign}, we designed and ranked SpCas9 gRNAs for all human protein-coding (Ensembl release 104) using four additional tools. 
+For \textit{CHOPCHOP} (v3), we used the command line interface (CLI) available at \url{https://bitbucket.org/valenlab/chopchop} with default parameters.
+For \textit{CCTop} (v1.0.0), we used the CLI available at \url{https://bitbucket.org/juanlmateo/cctop_standalone} with default parameters. 
+For \textit{FlashFry} (v1.15), we used the CLI available at \url{https://github.com/mckennalab/FlashFry} with default parameters. 
+For \textit{CRISPick}, due to the lack of a CLI, we submitted batch query jobs through the portal \url{https://portals.broadinstitute.org/gppx/crispick/public} (accessed on July 27 2022) with default parameters for the Hsu (2013) tracrRNA sequence. 
+}
+
+% Criteria for methods comparison
+\rev{
+\subsection*{Criteria used to compare feature availability across gRNA design tools}
+
+The following gRNA design tools were used for comparison in Table~\ref{tab:methods}: \textit{multicrispr} (v1.7.0), \textit{CRISPRseek} (v1.37.2), \textit{CHOPCHOP} (v3), \textit{CRISPOR} (website v5.01), \textit{CCTop} (v1.0.0), \textit{Guides} (v1.0), \textit{Cas-Designer} (v3.0), \textit{FlashFry} (v1.15), \textit{E-CRISP} (v5.4) and  \textit{CRISPick} (no version, accessed on July 27 2022). 
+The criteria listed below were used for assessing feature availability.
+
+\textit{Nuclease section}: a check mark indicates support for the corresponding nuclease, and \textit{Limited} indicates that only a subset of custom nucleases are available. \textit{Modalities} section:  a check mark indicates that the software offers at least one specific functionality for that modality. \textit{Target space section}: for the \textit{Reference genomes} row, a check mark indicates that the software supports gRNA design against reference genomes; for this row, \textit{Limited} indicates that the versions of the reference genomes are outdated. For the \textit{Custom sequences} row, a check mark indicates that the software supports the design of gRNAs targeting custom DNA sequences. 
+
+The \textit{Off-target aligner} section indicates which alignment methods are available in each tool.
+The \textit{Off-target options} section describes which off-target alignment functionalities are implemented: 
+genomic coordinates of the off-targets are available to the user (\textit{Genomic coordinates} row), 
+off-target alignment to custom sequences (\textit{Custom sequences} row), 
+concurrent off-target alignment to multiple organisms (\textit{cross-reactivity} row), 
+and alignment to major or minor allele genomes (\textit{Minor/major alleles} row).
+The \textit{On-target} and \textit{Off-target} scoring sections indicate which scoring methods are implemented in the software. 
+
+
+
+The \textit{Annotations} section indicates whether or not users have access to several annotations in the gRNA outputs. \textit{Off-target annotation} refers to gene context annotation of the off-targets; \textit{Isoform specification} refers to information about which gene isoforms are targeted by a given gRNA; \textit{Reinitiation sites} refers to gRNAs annotated as being upstream of potential reinitiation sites; \textit{Pfam domains} refers to information about which Pfam domains are targeted by a given gRNA; \textit{SNP annotation} refers to an annotation of gRNAs overlapping common SNPs; \textit{TSS annotation} refers to whether or not gRNAs are annotated to fall into the promoter region of knows TSSs; \textit{Conservation} refers to evolutionary conservation annotation. 
+
+The \textit{Library design} section indicates which library design features are available in each of the tools. \textit{Restriction sites} indicates whether or not gRNAs can be filtered for restriction sites of common enzymes. \textit{PolyT signal} indicates if PolyT stretch filtering is available. \textit{GC content} indicates filtering based on percentage GC content. \textit{Hairpin loops} indicates filtering based on potential self-complementarity. \textit{Paired gRNAs} indicates whether or not design of paired gRNAs is enabled. \textit{Ranking} indicates if the software returns a gRNA rank for user selection. 
+ }
+
+
+
+
+% Figure generation
+\rev{
+\subsection*{Figure generation}
+
+All figures were made in R (4.2.1), with the exception of the following figures that were made in Microsoft PowerPoint (v16.64): Figure~\ref{fig:nucleases}, Figure~\ref{fig:guideset}a-b, and the workflow diagrams of Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx} and Figure~\ref{fig:crispra}.  Figure~\ref{fig:guideset}c and Figure~\ref{fig:crispra}b were made using the R package \textit{Gviz} (v1.41.1). Figure~\ref{fig:rankings}, Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx}, Figure~\ref{suppfig:offtargets}, Figure~\ref{suppfig:cons}, Figure~\ref{suppfig:casrxlong} and Figure~\ref{suppfig:casrx} were made using base plotting functions in R. Reproducible code to generate all figures can be found in our \href{https://github.com/crisprVerse/crisprVersePaper}{GitHub manuscript repository}. 
+}
+
+
+
+% Data availability
+\rev{
+\subsection*{Data availability}
+
+Chromatin accessibility data from \citet{crispria} necessary for the CRISPRai on-target algorithm are available on Zenodo (DOI: 10.5281/zenodo.6716721).
+Fasta files, \textit{Bowtie} indexes and \textit{BWA} indexes for the major and minor alleles of hg38 using dbSNP151 are available on Zenodo (DOI: 10.5281/zenodo.6862556).
+We precomputed and fully annotated gRNAs for human and mouse protein-coding genes using \textit{crisprDesign} for the following nucleases: SpCas9, enAsCas12a, and CasRx. Ensembl release 104 and Ensembl release 102 were used to define genes for human and mouse, respectively. Separate datasets were generated for the CRISPRko, CRISPRa, CRISPRi, and CRISPRkd modalities. All files are available on Zenodo (DOI: 10.5281/zenodo.7042164). 
+}
+
+
+
+% Software and code availability
+\subsection*{Software and code availability}
+
+All crisprVerse packages are open-source and available on GitHub (Table~\ref{tab:software}).
+At time of publication, all packages were accepted at Bioconductor and available on the development branch of Bioconductor.
+Because of its size, the data package \textit{crisprDesignData} is hosted on GitHub only. 
+Reproducible code of all analyses can be found at \url{https://github.com/crisprVerse/crisprDesignPaper}.
+\rev{A list of extensive tutorials can be found at \url{https://github.com/crisprVerse/Tutorials}.}
+\rev{
+The analyses included in this paper were produced using the following package versions: 
+\textit{crisprDesign} (v0.99.134),
+\textit{crisprScore} (v1.1.14), 
+\textit{crisprScoreData} (v1.1.3), 
+\textit{crisprBowtie} (v1.1.1),
+\textit{crisprBase} v(1.1.5),
+\textit{crisprVerse} v(0.99.8),
+\textit{crisprBwa} (v1.1.3), 
+\textit{Rbwa} (v1.1.0),
+\textit{crisprDesignData} (0.99.17),
+\textit{crisprViz} (0.99.18)
+} \rev{
+We also offer a Docker container encapsulating the latest crisprVerse ecosystem on our \href{https://hub.docker.com/repository/docker/fortin946/crisprverse}{DockerHub page}.
+Documentation about the installation and usage of the container can be found \href{https://github.com/crisprVerse/Docker}{here}.
+}
+
+
+% List of packages
+\begin{table}
+\centering
+\begin{tabular}{r|l}
+R package  & Description  \\ \hline
+\href{https://github.com/crisprVerse/crisprVerse}{crisprVerse} &  Easily install of the crisprVerse ecosystem  \\
+\href{https://github.com/crisprVerse/crisprDesign}{crisprDesign}  &  Core package for gRNA design  \\
+\href{https://github.com/crisprVerse/crisprBase}{crisprBase}   &Nuclease specification and gRNA arithmetics  \\
+\href{https://github.com/crisprVerse/crisprBowtie}{crisprBowtie}   & gRNA spacer alignment with \textit{Bowtie}  \\
+\href{https://github.com/crisprVerse/crisprBwa}{crisprBwa}   &gRNA spacer alignment with \textit{BWA}   \\
+\href{https://github.com/crisprVerse/crisprScore}{crisprScore}  & On- and off-target scoring algorithms for gRNAs \\
+\href{https://github.com/crisprVerse/crisprViz}{crisprViz} & Visualization of  gRNAs using genomic tracks   \\
+\href{https://github.com/crisprVerse/Rbwa}{Rbwa}  &R wrapper for \textit{BWA} aligner \\
+\href{https://github.com/crisprVerse/crisprScoreData}{crisprScoreData}   &Pre-trained machine learning models for \textit{crisprScore}  \\
+\href{https://github.com/crisprVerse/crisprDesignData}{crisprDesignData}  &  Pre-computed data for the crisprVerse ecosystem (human and mouse)  \\
+\end{tabular}
+\caption{\textbf{R packages in the crisprVerse ecosystem.}}
+\label{tab:software}
+\end{table}
+
+
+
+
+
+% Abbreviations
+\section*{Abbreviations}
+
+
+\begin{itemize}
+\item ABE: adenine base editor
+\item BWA: Burrows-Wheeler Aligner
+\item CAGE: Cap Analysis of Gene Expression
+\item CBE: cytosine base editor
+\item CCLE: cancer cell line encyclopedia
+\item CDS: coding DNA sequence
+\item CFD: cutting frequency determination
+\item CLI: command line interface
+\item CRISPR: clustered regularly interspaced short palindromic repeats
+\item CRISPRa: CRISPR activation
+\item CRISPRbe: CRISPR  base editing
+\item CRISPRi: CRISPR interference
+\item DHS: DNAse I hypersensitive site
+\item DSB: DNA double-strand break
+\item FACS: fluorescence-activated cell sorting
+\item LFC: log-fold change
+\item lncRNAs: long non-coding RNAs
+\item MAF: minor allele frequency
+\item OPS: optical pooled screening
+\item PAM: protospacer adjacent motif
+\item PE: prime editing
+\item pegRNA: prime editing guide RNA
+\item PFS: protospacer flanking sequence
+\item RNAi: RNA interference
+\item gRNA: single-guide RNA
+\item SNP: single-nucleotide polymorphism
+\item TSS: transcription starting site
+\end{itemize}
+
+
+% Competing stuff
+\section*{Competing interests}
+
+The authors declare that they have no competing interests.
+
+% Author contributions:
+\section*{Authors contributions}
+
+JPF led the software development and supervised the work.
+JPF conceptualized and wrote the manuscript, with contributions and input from all authors. 
+LH and JPF developed the R packages, with contributions from PP and AL. 
+All authors read and approved the final manuscript.
+
+% Acknowledgements:
+\section*{Acknowledgements}
+
+We thank Benjamin Haley, Mike Costa, Amy Heidersbach, Kristel Dorighi, Scott Martin, Rena Yang, Allison Vuong, Oleg Mayba, Sandra Melo Carlos, and Russell Xie for sharing their expertise with us and guiding the development of our software ecosystem. We also thank William Forrest, Maggie Crow, Hector Corrada Bravo, Michael Lawrence, and Benjamin Haley for providing invaluable feedback on the manuscript and software. We thank Nitesh Turaga, Lori Shepherd, Marcel Ramos, Helena Crowell and Kayla Morrell who kindly and thoroughly reviewed our R packages as part of the Bioconductor submission process. Finally, we want to thank the referees for their invaluable input and suggestions. 
+
+
+% Bib stuff
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+
+
+
+% Supplementary 
+\clearpage
+\section*{Supplementary Tables and Figures}
+
+\renewcommand{\figurename}{Supplementary Figure}
+\setcounter{figure}{0}
+\makeatletter 
+\renewcommand{\thefigure}{S\@arabic\c@figure}
+\makeatother
+
+
+\renewcommand{\tablename}{Supplementary Table}
+\setcounter{table}{0}
+\makeatletter 
+\renewcommand{\thetable}{S\@arabic\c@table}
+\makeatother
+
+
+
+
+
+
+% Table
+\begin{table}[h]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|lll|llllllllllll|}\hline
+\multicolumn{1}{|c|}{Target}                & \multicolumn{3}{c|}{Spacer specification}                                                                                                        & \multicolumn{12}{c|}{Number of mismatches}                                                                                                                                                                                                                                                                                    \\ \hline
+\multicolumn{1}{|c|}{\multirow{2}{*}{Gene}} & \multicolumn{1}{c}{\multirow{2}{*}{Coordinate}} & \multicolumn{1}{c}{\multirow{2}{*}{Spacer}} & \multicolumn{1}{c|}{\multirow{2}{*}{PAM}} & \multicolumn{3}{c|}{0}                                                        & \multicolumn{3}{c|}{1}                                                        & \multicolumn{3}{c|}{2}                                                        & \multicolumn{3}{|c|}{3}                                                        \\ \cline{5-16} 
+\multicolumn{1}{|c|}{}                      & \multicolumn{1}{c}{}                          & \multicolumn{1}{c}{}                        & \multicolumn{1}{c|}{}                     & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} \\ \hline
+\multirow{2}{*}{\textit{CFTR}}                      & chr7:117559595                                         & \texttt{ATTAAAGAAAATATCATCTT}                        & \texttt{TGG}              & 1                     & 1                         & \multicolumn{1}{l|}{1}   & 7                     & 7                          & \multicolumn{1}{l|}{7}   & 145                   & 145                       & \multicolumn{1}{l|}{145}   & 2,314                 & 2,314                          &        2,314                 \\
+                                           & chr7:117559605                                         & \texttt{TCTGTATCTATATTCATCAT}                        & \texttt{AGG}                                       & 1                     &  1                          & \multicolumn{1}{l|}{1}   & 7                     &        7                    & \multicolumn{1}{l|}{7}    & 125                   &      125                      & \multicolumn{1}{l|}{125}    & 1,704                 &           1,704                   &        1,704                  \\ \hline
+\multirow{2}{*}{\textit{HBB}}                       & chr11:5227002                                         & \texttt{CATGGTGCATCTGACTCCTG}                        & \texttt{AGG}              & 2                     &       2                   & \multicolumn{1}{l|}{2}    & 0                     & 0                          & \multicolumn{1}{l|}{0}    & 14                    & 14                         & \multicolumn{1}{l|}{14}    & 210                   &       210                      &      210                     \\
+                                           & chr11:5227004                                         & \texttt{GTAACGGCAGACTTCTCCTC}                        & \texttt{AGG}                                       & 1                     &       1                     & \multicolumn{1}{l|}{1}    & 0                     & 0                          & \multicolumn{1}{l|}{0}    & 7                     &    7                        & \multicolumn{1}{l|}{7}    & 83                    &          83                   &     83                     \\ \hline
+\multirow{2}{*}{\textit{HEXA}}                      & chr15:72346571                                         & \texttt{TGTAGAAATCCTTCCAGTCA}                        & \texttt{GGG}            & 1                     &           1                 & \multicolumn{1}{l|}{1}    & 0                     &    0                        & \multicolumn{1}{l|}{0}    & 25                    &    25                        & \multicolumn{1}{l|}{25}    & 298                   & 298                          &      298                      \\
+                                           & chr15:72346578                                         & \texttt{ATCCTTCCAGTCAGGGCCAT}                        & \texttt{AGG}                                       & 1                     &         1                   & \multicolumn{1}{l|}{1}    & 0                     &        0                    & \multicolumn{1}{l|}{0}   & 6                     &       6                     & \multicolumn{1}{l|}{6}    & 203                   &     203                       &          203                  \\ \hline
+\multirow{4}{*}{\textit{PRNP}}                      & chr20:4699588                                         & \texttt{AGCAGCTGGGGCAGTGGTGG}                        & \texttt{GGG}            & 1                     &   1                         & \multicolumn{1}{l|}{1}    & 2                     &        2                    & \multicolumn{1}{l|}{2}    & 96                    &     96                       & \multicolumn{1}{l|}{96}    & 909                   &     909                       &    909                       \\
+                                           & chr20:4699589                                         & \texttt{GCAGCTGGGGCAGTGGTGGG}                        & \texttt{GGG}                                       & 1                     &           1                 & \multicolumn{1}{l|}{1}    & 12                    & 12                          & \multicolumn{1}{l|}{12}    & 100                    &       100                     & \multicolumn{1}{l|}{100}    & 1,052                 &  1,052                          &      1,052                    \\
+                                           & chr20:4699595                                         & \texttt{GGGGCAGTGGTGGGGGGCCT}                        & \texttt{TGG}                                       & 1                     &         1                  & \multicolumn{1}{l|}{1}   & 2                     &      2                      & \multicolumn{1}{l|}{2}    & 56                    & 56                         & \multicolumn{1}{l|}{56}    & 860                   & 860                           &      860                     \\
+                                           & chr20:4699598                                         & \texttt{GCAGTGGTGGGGGGCCTTGG}                        & \texttt{CGG}                                       & 1                     &          1                  & \multicolumn{1}{l|}{1}    & 0                     &      0                      & \multicolumn{1}{l|}{0}    & 32                    &   32                         & \multicolumn{1}{l|}{32}    & 421                   &           421                   &        421                  \\ \hline
+\end{tabular}
+}
+\caption{Table of on- and off-target alignments in the GRCh38.p13 for the 10 spacer sequences reported in \citet{multicrispr} using a PAM-agnostic approach. Number of mismatches between 0 and 3 were considered for 3 different aligners: Aho-Corasick exact string matching as implemented in \textit{Biostrings} (AC), \textit{Bowtie} aligner via the \textit{crisprBowtie} package (BO), and \textit{BWA} aligner via the \textit{crisprBwa} package (BW). All 3 alignment methods agree. }
+\label{supptab:offtargets}
+\end{table}
+
+
+
+%%% Off-targets figure within crisprDesign
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{analyses/offtargets/figures/offtarget_comparison.pdf}
+  \caption{\textbf{Comparison of computing times for off-target alignment methods implemented in \textit{crisprDesign}.} 
+  We compare computing time for the four different off-target methods available via the  \textit{addSpacerAligmments} function in \textit{crisprDesign}: \textit{Bowtie}, via the \textit{crisprBowtie} package (\texttt{Bowtie}), \textit{BWA}, via the \textit{crisprBwa} package (\texttt{bwa}), and an iterative version of both algorithms to diminish the impact of highly non-specific gRNAs on computing time (\texttt{bowtie-iter} and \texttt{bwa-iter}).
+  }
+  \label{suppfig:offtargets}
+\end{figure}
+
+
+%%% Off-targets figure across tools
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/speed/speedAcrossTools.pdf}
+  \caption{\rev{\textbf{Comparison of computing times for subsets of human protein-coding exons.} 
+We compared computing times across tools to design gRNAs and perform a genome-wide off-target search in the human genome. 
+Six random subsets of protein-coding exons located on chr1 were used to perform the comparison. The sizes of the subsets were 100, 200, 400, 800, 1600 and 3200 exons.
+The x-axis shows the total size in nucleotides of the DNA target space formed by each subset, and the y-axis shows computing times in seconds. Details about the alignment parameters for each method can be found in the Methods section. }}
+  \label{suppfig:speed}
+\end{figure}
+
+
+
+
+
+%%% Conservation and % CDS
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{figures/cons/cons.pdf}
+  \caption{\rev{\textbf{Influence of evolutionary conservation and gene target position on gRNA activity.} 
+\textbf{a-c} We annotated each gRNA present in Project Achilles with a conservation score using the function \textit{addConservationScores} implemented in \textit{crisprDesign} (see Methods). The gRNA conservation score is taken as the average DNA conservation score across nucleotides in a user-specified window around the gRNA cut site. In \textbf{a}, we show the correlation between observed gRNA activity and the conservation scores for different window sizes for essential genes. The data suggest an optimal window of 18 nucleotides around the cut site. \textbf{b} Distributions of the observed gRNA log-fold changes (LFCs) based on whether or not gRNAs are targeting regions of high conservation (positive gRNA conservation score) or regions of low conservation (negative gRNA conservation score), for gRNAs targeting essential genes. \textbf{c} Same as \textbf{b}, but for gRNAs targeting non-essential genes. \textbf{d} Relationship between gRNA activity and gRNA position within the target coding sequence (CDS) for gRNAs targeting essential genes in the Hart2015 dataset.  The Ensembl canonical transcript was used as the target CDS for each gene. The red curve represents a LOWESS trend. gRNAs located beyond the first 85\% of the CDS (to the right of the the vertical line) show a progressive decline in activity. \textbf{e} Same as \textbf{d}, but for gRNAs targeting non-essential genes. 
+  }}
+  \label{suppfig:cons}
+\end{figure}
+
+
+
+
+
+% Supp Figure CasRx (aa genomic tracks)
+\begin{figure}
+\centering
+\includegraphics[width=01\textwidth]{analyses/casrx/sanjana//figures/casrx_supp_long.pdf}
+  \caption{\textbf{CasRx tiling screens of \textit{CD55} and \textit{CD46}.}
+Pooled FACS tiling screening data of genes \textit{CD55} and \textit{CD46} performed in HEK 294 cells using CasRx (\textit{Rfx}Cas13d). Processed and normalized log$_2$ fold changes were obtained from \citet{wessels2020massively}. Both screens are represented using the canonical Ensembl isoforms.  We remapped and reannotated all gRNA sequences using \textit{crisprDesign}; isoform annotation, on-target activity score using CasRx-RF as implemented in \textit{crisprScore}, and off-target alignments were added to each gRNA. The color of the dots indicates the number of isoforms targeted by each gRNA. The size of the dots is proportional to the on-target activity score. The coding sequence (CDS) is highlighted in grey. LOESS regression curves are shown as solid lines. For both genes, transcript per million (TPM) counts in HEK 293 cells summed across all isoforms overlapping a given nucleotide position are shown below the log-fold change panels.
+}
+  \label{suppfig:casrxlong}
+\end{figure}
+
+
+% Supp Figure CasRx (mismatch tolerance)
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{analyses/casrx/sanjana//figures/casrx_supp.pdf}
+  \caption{\textbf{Probability weights used for off-target scoring of CasRx gRNAs}
+\textbf{a} Boxplots of the differences in log2 fold change $(\Delta$LFC) between single-mismatch (SM) gRNAs and their corresponding perfect-match (PM) gRNAs in the GFP tiling screen. X-axis represents the mismatch position within the spacer sequence, with 1 being the position next to the direct repeat. 
+The smooth curve was obtained using LOESS regression. The dotted line represents the average log-fold change of all PM gRNAs after multiplying by -1. 
+\textbf{b} CasRx mismatch tolerance probabilities estimated from (a) and used in the CFD scoring method in \textit{crisprScore}. 
+}
+  \label{suppfig:casrx}
+\end{figure}
+
+
+
+
+
+\end{document}
+
+
+
+
+
+ 
