@@ -81,10 +81,15 @@ gs$binary <- ifelse(gs$score_conservation<=0,0,1)
 
 
 
+prepareConsScoresSens <- function(){
+    out <- data.frame(windowSize=ks*2)
+    out$cor <- cors
+    return(out)
+}
 
-
-
-
+write.csv(prepareConsScoresSens(),
+          file="consScoresSens.csv",
+          row.names=FALSE)
 
 
 pdf("figures/conservation.pdf", width=7, height=2.2)
@@ -122,7 +127,6 @@ legend("topleft", col=c(1, "red"), bty="n",
        cex=0.75,
        lty=1, c("Low conservation", "High conservation"))
 
-final <- gs[gs$gene_symbol %in% egs]
 final <- gs[gs$gene_symbol %in% negs]
 xs <- split(final$lfc, f=final$binary)
 lwd=1.3
@@ -145,6 +149,29 @@ legend("topleft", col=c(1, "red"), bty="n",
        lty=1, c("Low conservation", "High conservation"))
 dev.off()
 
+prepareConsData <- function(){
+    final <- gs[gs$gene_symbol %in% egs]
+    final <- mcols(final)
+    final <- final[,c("lfc",
+                      "score_conservation",
+                      "protospacer", "gene_symbol")]
+    final$class <- "essential"
+    final1 <- final
+
+    final <- gs[gs$gene_symbol %in% negs]
+    final <- mcols(final)
+    final <- final[,c("lfc",
+                      "score_conservation",
+                      "protospacer", "gene_symbol")]
+    final$class <- "non-essential"
+    final2 <- final
+    out <- rbind(final1, final2)
+    rownames(out) <- NULL
+    out
+}
+
+consData <- prepareConsData()
+write.csv(consData, file="consData.csv",row.names=FALSE)
 
 
 
@@ -194,6 +221,26 @@ abline(v=85)
 lowessPlot(gs[gs$gene_symbol %in% negs])
 dev.off()
 
+
+prepareCdsData <- function(){
+    gs1 <- gs[gs$gene_symbol %in% egs]
+    gs2 <- gs[gs$gene_symbol %in% negs]
+    gs1$class <- "essential"
+    gs2$class <- "non-essential"
+    out <- c(gs1,gs2)
+    out <- mcols(out)
+    out <- data.frame(protospacer=out$protospacer,
+                      gene=out$gene_symbol,
+                      lfc=out$lfc,
+                      class=out$class,
+                      percentCDS=out$percentCDS)
+    out <- out[complete.cases(out),]
+    rownames(out) <- NULL
+    out
+}
+
+cdsData <- prepareCdsData()
+write.csv(cdsData, file="cdsData.csv",row.names=FALSE)
 
 
 
