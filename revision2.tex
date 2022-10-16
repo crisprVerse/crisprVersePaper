@@ -193,12 +193,12 @@ The \textit{TxDb} object is a standard Bioconductor object to store information 
 
 
 We first compared the accuracy of the three alignment methods implemented in \textit{crisprDesign}. \citet{multicrispr} reported that \textit{Bowtie} misses a large number of double-mismatch and triple-mismatch off-targets in comparison to the gold-standard complete string matching algorithm.
-To investigate this, we repeated the PAM-agnostic on- and off-target alignment of the 10 spacer sequences described in \citet{multicrispr} to the GRCh38 reference genome using all three alignment methods. In contrast to \citet{multicrispr}, all three alignment methods implemented in \textit{crisprDesign} return an identical list of off-targets (see Table~\ref{supptab:offtargets}). This indicates that, contrary to previous reports, both \textit{BWA} and \textit{Bowtie} provide a complete on- and off-target search. It appears that the missing off-targets in \citet{multicrispr} are located on unlocalized and unplaced GRCh38 sequences.
+To investigate this, we repeated the PAM-agnostic on- and off-target alignment of the 10 spacer sequences described in \citet{multicrispr} to the GRCh38 reference genome using all three alignment methods. In contrast to \citet{multicrispr}, all three alignment methods implemented in \textit{crisprDesign} return an identical list of off-targets (see Supplementary Table 1). This indicates that, contrary to previous reports, both \textit{BWA} and \textit{Bowtie} provide a complete on- and off-target search. It appears that the missing off-targets in \citet{multicrispr} are located on unlocalized and unplaced GRCh38 sequences.
 
-Next, we evaluated the run times of four configurations offered in \textit{crisprDesign} for alignment: \textit{Bowtie}, \textit{BWA}, an iterative version of \textit{Bowtie} (bowtie-int) and an iterative version of \textit{BWA} (bwa-int). We developed iterative versions of the \textit{Bowtie} and \textit{BWA} alignments to avoid situations where gRNAs are mapping to hundreds of loci in the genome, considerably slowing down the off-target search when a higher number of mismatches is allowed.  The iterative strategy starts by aligning spacer sequences with no mismatches allowed. Then, it sequentially performs the alignment with a higher number of mismatches only for sequences that have a low number of off-targets at the previous step, thus avoiding the cost of extra searches for low-quality sequences that already have many off-targets.  We performed the evaluation on three sets of gRNAs targeting the human genome, each with a different size (see Methods).  For all three sets, the \textit{Bowtie} and BWA gRNA alignments have comparable run times. (Figure~\ref{suppfig:offtargets}). For \textit{ZNF101}, which contains several non-specific gRNAs overlapping a repeat element, our iterative versions of the alignment methods shows substantial gain in speed. 
+Next, we evaluated the run times of four configurations offered in \textit{crisprDesign} for alignment: \textit{Bowtie}, \textit{BWA}, an iterative version of \textit{Bowtie} (bowtie-int) and an iterative version of \textit{BWA} (bwa-int). We developed iterative versions of the \textit{Bowtie} and \textit{BWA} alignments to avoid situations where gRNAs are mapping to hundreds of loci in the genome, considerably slowing down the off-target search when a higher number of mismatches is allowed.  The iterative strategy starts by aligning spacer sequences with no mismatches allowed. Then, it sequentially performs the alignment with a higher number of mismatches only for sequences that have a low number of off-targets at the previous step, thus avoiding the cost of extra searches for low-quality sequences that already have many off-targets.  We performed the evaluation on three sets of gRNAs targeting the human genome, each with a different size (see Methods).  For all three sets, the \textit{Bowtie} and BWA gRNA alignments have comparable run times. (Supplementary Figure 1). For \textit{ZNF101}, which contains several non-specific gRNAs overlapping a repeat element, our iterative versions of the alignment methods shows substantial gain in speed. 
 
 
-Finally, we compared run times for designing SpCas9 gRNAs and performing a genome-wide off-target search for the following tools: \textit{CCTop}, \textit{CHOPCHOP}, \textit{multicrispr}, \textit{FlashFry}, and \textit{crisprDesign}. Other tools were not included for reasons discussed in the Methods section. To perform the evaluation, we generated six random subsets of protein-coding exons located on chromosome 1 with the following sizes: 100, 200, 400, 800, 1600 and 3200 exons. For each tool and each subset, we ran the off-target alignment against the human reference genome (GRCh38 build) using a maximum of 2 mismatches. We included the alignment parameters used for each tool in the Methods section. Both \textit{FlashFry} and the iterative \textit{Bowtie} alignment implemented in \textit{crisprDesign} show a substantial speed gain in comparison to other methods (Figure~\ref{suppfig:speed}).
+Finally, we compared run times for designing SpCas9 gRNAs and performing a genome-wide off-target search for the following tools: \textit{CCTop}, \textit{CHOPCHOP}, \textit{multicrispr}, \textit{FlashFry}, and \textit{crisprDesign}. Other tools were not included for reasons discussed in the Methods section. To perform the evaluation, we generated six random subsets of protein-coding exons located on chromosome 1 with the following sizes: 100, 200, 400, 800, 1600 and 3200 exons. For each tool and each subset, we ran the off-target alignment against the human reference genome (GRCh38 build) using a maximum of 2 mismatches. We included the alignment parameters used for each tool in the Methods section. Both \textit{FlashFry} and the iterative \textit{Bowtie} alignment implemented in \textit{crisprDesign} show a substantial speed gain in comparison to other methods (Supplementary Figure 2).
 
 
 
@@ -250,9 +250,9 @@ Users can visually inspect gRNAs within a genomic track with the option of addin
 % Functional annotations
 \subsection*{Functional annotations in \textit{crisprDesign} improve gRNA selection}
 
-We illustrate how functional annotations implemented in \textit{crisprDesign} can improve gRNA selection by focusing on two functionalities: \textit{addConservationScores} and \textit{addGeneAnnotation}. We assessed the \textit{addConservationScores} function using the large-scale CRISPRko fitness screening dataset from Project Achilles \citep{ceres}. We obtained normalized log fold changes (LFCs) measuring gRNA dropout over time (see Methods). In fitness screens, gRNAs targeting essential genes should deplete over time, and are therefore expected to have negative LFCs. Therefore, gRNAs targeting essential genes can be used to investigate determinants of gRNA activity. We downloaded basewise phyloP scores \citep{pollard2010detection} from the UCSC genome browser. Scores were calculated from a phylogenic alignment of 30 vertebrate species (see Methods). Positive and negative scores represent evolutionary conservation and acceleration, respectively.  In Figure~\ref{suppfig:cons}a, we show the correlation between LFCs and conservation scores obtained using different window sizes, for gRNAs targeting a reference set of essential genes \citep{hart2014}. The data suggest an optimal window of 18 nucleotides around the cut site, which is our recommended window size in \textit{crisprDesign}. In Figure~\ref{suppfig:cons}b, we present LFC distributions of gRNAs targeting essential genes, split by the sign of the gRNA conservation score. gRNAs targeting conserved regions (positive score, red line) show greater activity than less conserved regions (negative score, black line) as observed by greater gRNA dropout. This is in line with previous results \citep{crispro,ruleset3,pincer}. gRNAs targeting non-essential genes serve as negative controls and show no dropout, irrespective of the conservation scores, as expected (Figure~\ref{suppfig:cons}c). 
+We illustrate how functional annotations implemented in \textit{crisprDesign} can improve gRNA selection by focusing on two functionalities: \textit{addConservationScores} and \textit{addGeneAnnotation}. We assessed the \textit{addConservationScores} function using the large-scale CRISPRko fitness screening dataset from Project Achilles \citep{ceres}. We obtained normalized log fold changes (LFCs) measuring gRNA dropout over time (see Methods). In fitness screens, gRNAs targeting essential genes should deplete over time, and are therefore expected to have negative LFCs. Therefore, gRNAs targeting essential genes can be used to investigate determinants of gRNA activity. We downloaded basewise phyloP scores \citep{pollard2010detection} from the UCSC genome browser. Scores were calculated from a phylogenic alignment of 30 vertebrate species (see Methods). Positive and negative scores represent evolutionary conservation and acceleration, respectively.  In Supplementary Figure 3a, we show the correlation between LFCs and conservation scores obtained using different window sizes, for gRNAs targeting a reference set of essential genes \citep{hart2014}. The data suggest an optimal window of 18 nucleotides around the cut site, which is our recommended window size in \textit{crisprDesign}. In Supplementary Figure 3b, we present LFC distributions of gRNAs targeting essential genes, split by the sign of the gRNA conservation score. gRNAs targeting conserved regions (positive score, red line) show greater activity than less conserved regions (negative score, black line) as observed by greater gRNA dropout. This is in line with previous results \citep{crispro,ruleset3,pincer}. gRNAs targeting non-essential genes serve as negative controls and show no dropout, irrespective of the conservation scores, as expected (Supplementary Figure 3c). 
 
-Next, we sought to understand how gRNA position within the CDS of the target gene impacts gRNA activity. Given that most gRNAs in Project Achilles were located in the first 50\% of the target CDS by design, we obtained a different screening dataset; we downloaded data from a genome-wide fitness screen performed in HCT116 cells (Hart2015 dataset, see Methods). We used the \textit{addGeneAnnotation} function in \textit{crisprDesign} to annotate gRNAs with a position percentage of the target CDS. We used the Ensembl canonical transcript of the target gene as the representative CDS. In Figure~\ref{suppfig:cons}d, we show the relationship between LFCs and \% CDS for gRNAs targeting essential genes. gRNAs located beyond the first 85\% of the CDS (to the right of the vertical line) show a progressive decline in activity. The results agree with the litterature \citep{azimuth}. gRNAs targeting non-essential genes serve as negative controls and behave as expected (Figure~\ref{suppfig:cons}e). 
+Next, we sought to understand how gRNA position within the CDS of the target gene impacts gRNA activity. Given that most gRNAs in Project Achilles were located in the first 50\% of the target CDS by design, we obtained a different screening dataset; we downloaded data from a genome-wide fitness screen performed in HCT116 cells (Hart2015 dataset, see Methods). We used the \textit{addGeneAnnotation} function in \textit{crisprDesign} to annotate gRNAs with a position percentage of the target CDS. We used the Ensembl canonical transcript of the target gene as the representative CDS. In Supplementary Figure 3d, we show the relationship between LFCs and \% CDS for gRNAs targeting essential genes. gRNAs located beyond the first 85\% of the CDS (to the right of the vertical line) show a progressive decline in activity. The results agree with the litterature \citep{azimuth}. gRNAs targeting non-essential genes serve as negative controls and behave as expected (Supplementary Figure 3e). 
 
 Based on these results, both functional annotations help selecting more active gRNAs; we recommend in \textit{crisprDesign} to prioritize gRNAs with positive conservation scores, and located in the first 85\% of the target CDS. Those recommended parameters are implemented as the default parameters in the \textit{crisprDesign} gRNA ranking procedure discussed next. 
 
@@ -315,7 +315,7 @@ The workflow takes into consideration the aforementioned issues. To validate our
 
 We first extracted mRNA sequences of both genes using the function \textit{getMrnaSequence} from \textit{crisprDesign}. 
 The mRNA sequences, together with the \textit{CrisprNuclease} object CasRx from \textit{crisprBase}, served as inputs to create a \textit{Guideset}.
-Next, we predicted on-target activity of the gRNAs using our implementation of the CasRx-RF method \citep{wessels2020massively} available in \textit{crisprScore} (see Methods). The normalized LFCs in the screen correlate well with the CasRx-RF score (Figure~\ref{fig:casrx}a). We then added a transcript annotation to each gRNA using an Ensembl \textit{TxDb} object as input. This adds a list of targeted isoforms to each gRNA, as well as transcript context (CDS, $5^{\prime}$UTR, or $3^{\prime}$UTR). We observed in the screen that gRNAs targeting a higher number of isoforms, and gRNAs located in CDS, lead to higher activity (Figure~\ref{fig:casrx}b, and Figure~\ref{suppfig:casrxlong}). 
+Next, we predicted on-target activity of the gRNAs using our implementation of the CasRx-RF method \citep{wessels2020massively} available in \textit{crisprScore} (see Methods). The normalized LFCs in the screen correlate well with the CasRx-RF score (Figure~\ref{fig:casrx}a). We then added a transcript annotation to each gRNA using an Ensembl \textit{TxDb} object as input. This adds a list of targeted isoforms to each gRNA, as well as transcript context (CDS, $5^{\prime}$UTR, or $3^{\prime}$UTR). We observed in the screen that gRNAs targeting a higher number of isoforms, and gRNAs located in CDS, lead to higher activity (Figure~\ref{fig:casrx}b, and Supplementary Figure 4). 
 
 We performed an off-target search using \textit{crisprBowtie} to the human transcriptome by providing a \textit{Bowtie} index built on mRNA sequences.
 We extended the CFD off-target scoring algorithm implemented in \textit{crisprScore} to work with CasRx by estimating mismatch tolerance weights on the GFP tiling screen data from \citet{wessels2020massively} (see Methods). The off-target CFD-CasRx score performs well at predicting gRNA activity of single-mismatch and double-mismatch gRNAs in the \textit{CD55} screen (Figure~\ref{fig:casrx}c, and see Methods).  
@@ -517,7 +517,7 @@ For each gRNA, we quantified the abundance of its target gene by summing transcr
 on March 5 2022. Data are based on The Human Protein Atlas version 21.0 and Ensembl version 103 .
 We averaged TPM counts across the two replicates. 
 
-We used the single-mismatch (SM) gRNA constructs from the GFP tiling screen to estimate position-dependent probabilities of mismatch tolerance by the CasRx nuclease. To do so, we first calculated differences in LFC $(\Delta$LFC) between SM gRNAs and their corresponding perfect-match (PM) gRNAs. We then fitted a LOESS curve with respect to the nucleotide position to obtain an average $\Delta$LFC at each spacer position (Figure~\ref{suppfig:casrx}a). We transformed the LOESS fitted values to a scale between 0 and 1 to represent them as percentages of activity with respect to the median activity of the PM gRNAs tiling GFP (Figure~\ref{suppfig:casrx}b). Given the sparsity of the data, specifying a nucleotide-specific weight at each position was not possible. We adapted in \textit{crisprScore} the CFD off-targeting scoring method to CasRx by using those probabilities as scoring weights. The corresponding scoring algorithm is named CFD-CasRx. 
+We used the single-mismatch (SM) gRNA constructs from the GFP tiling screen to estimate position-dependent probabilities of mismatch tolerance by the CasRx nuclease. To do so, we first calculated differences in LFC $(\Delta$LFC) between SM gRNAs and their corresponding perfect-match (PM) gRNAs. We then fitted a LOESS curve with respect to the nucleotide position to obtain an average $\Delta$LFC at each spacer position (Supplementary Figure 5a). We transformed the LOESS fitted values to a scale between 0 and 1 to represent them as percentages of activity with respect to the median activity of the PM gRNAs tiling GFP (Supplementary Figure 5b). Given the sparsity of the data, specifying a nucleotide-specific weight at each position was not possible. We adapted in \textit{crisprScore} the CFD off-targeting scoring method to CasRx by using those probabilities as scoring weights. The corresponding scoring algorithm is named CFD-CasRx. 
 
 To evaluate the performance of the CFD-CasRx score on an independent dataset, we calculated CFD-CasRx off-target scores on all SM and double-mismatch (DM) gRNAs included in the \textit{CD55} tiling screen. To predict LFCs of the DM gRNAs, we multiplied their respective PM gRNA LFCs with the CFD-CasRx on-target scores. 
 
@@ -615,7 +615,7 @@ The \textit{Library design} section indicates which library design features are 
 
 \subsection*{Figure generation}
 
-All figures were made in R (4.2.1), with the exception of the following figures that were made in Microsoft PowerPoint (v16.64): Figure~\ref{fig:nucleases}, Figure~\ref{fig:guideset}a-b, and the workflow diagrams of Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx} and Figure~\ref{fig:crispra}.  Figure~\ref{fig:guideset}c and Figure~\ref{fig:crispra}b were made using the R package \textit{Gviz} (v1.41.1). Figure~\ref{fig:rankings}, Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx}, Figure~\ref{suppfig:offtargets}, Figure~\ref{suppfig:cons}, Figure~\ref{suppfig:casrxlong} and Figure~\ref{suppfig:casrx} were made using base plotting functions in R. Reproducible code to generate all figures can be found in our \href{https://github.com/crisprVerse/crisprVersePaper}{GitHub manuscript repository}. 
+All figures were made in R (4.2.1), with the exception of the following figures that were made in Microsoft PowerPoint (v16.64): Figure~\ref{fig:nucleases}, Figure~\ref{fig:guideset}a-b, and the workflow diagrams of Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx} and Figure~\ref{fig:crispra}.  Figure~\ref{fig:guideset}c and Figure~\ref{fig:crispra}b were made using the R package \textit{Gviz} (v1.41.1). Figure~\ref{fig:rankings}, Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx}, Supplementary Figure 1, Supplementary Figure 3, Supplementary Figure 4 and Supplementary Figure 5 were made using base plotting functions in R. Reproducible code to generate all figures can be found in our \href{https://github.com/crisprVerse/crisprVersePaper}{GitHub manuscript repository}. 
 
 
 
@@ -969,118 +969,6 @@ R package  & Description  \\ \hline
 
 
 
-
-
-
-% Supplementary 
-\clearpage
-\section*{Supplementary Tables and Figures}
-
-\renewcommand{\figurename}{Supplementary Figure}
-\setcounter{figure}{0}
-\makeatletter 
-\renewcommand{\thefigure}{S\@arabic\c@figure}
-\makeatother
-
-
-\renewcommand{\tablename}{Supplementary Table}
-\setcounter{table}{0}
-\makeatletter 
-\renewcommand{\thetable}{S\@arabic\c@table}
-\makeatother
-
-
-
-
-
-
-% Table
-\begin{table}[h]
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{|l|lll|llllllllllll|}\hline
-\multicolumn{1}{|c|}{Target}                & \multicolumn{3}{c|}{Spacer specification}                                                                                                        & \multicolumn{12}{c|}{Number of mismatches}                                                                                                                                                                                                                                                                                    \\ \hline
-\multicolumn{1}{|c|}{\multirow{2}{*}{Gene}} & \multicolumn{1}{c}{\multirow{2}{*}{Coordinate}} & \multicolumn{1}{c}{\multirow{2}{*}{Spacer}} & \multicolumn{1}{c|}{\multirow{2}{*}{PAM}} & \multicolumn{3}{c|}{0}                                                        & \multicolumn{3}{c|}{1}                                                        & \multicolumn{3}{c|}{2}                                                        & \multicolumn{3}{|c|}{3}                                                        \\ \cline{5-16} 
-\multicolumn{1}{|c|}{}                      & \multicolumn{1}{c}{}                          & \multicolumn{1}{c}{}                        & \multicolumn{1}{c|}{}                     & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} & \multicolumn{1}{c}{AC} & \multicolumn{1}{c}{BO} & \multicolumn{1}{c|}{BW} \\ \hline
-\multirow{2}{*}{\textit{CFTR}}                      & chr7:117559595                                         & \texttt{ATTAAAGAAAATATCATCTT}                        & \texttt{TGG}              & 1                     & 1                         & \multicolumn{1}{l|}{1}   & 7                     & 7                          & \multicolumn{1}{l|}{7}   & 145                   & 145                       & \multicolumn{1}{l|}{145}   & 2,314                 & 2,314                          &        2,314                 \\
-                                           & chr7:117559605                                         & \texttt{TCTGTATCTATATTCATCAT}                        & \texttt{AGG}                                       & 1                     &  1                          & \multicolumn{1}{l|}{1}   & 7                     &        7                    & \multicolumn{1}{l|}{7}    & 125                   &      125                      & \multicolumn{1}{l|}{125}    & 1,704                 &           1,704                   &        1,704                  \\ \hline
-\multirow{2}{*}{\textit{HBB}}                       & chr11:5227002                                         & \texttt{CATGGTGCATCTGACTCCTG}                        & \texttt{AGG}              & 2                     &       2                   & \multicolumn{1}{l|}{2}    & 0                     & 0                          & \multicolumn{1}{l|}{0}    & 14                    & 14                         & \multicolumn{1}{l|}{14}    & 210                   &       210                      &      210                     \\
-                                           & chr11:5227004                                         & \texttt{GTAACGGCAGACTTCTCCTC}                        & \texttt{AGG}                                       & 1                     &       1                     & \multicolumn{1}{l|}{1}    & 0                     & 0                          & \multicolumn{1}{l|}{0}    & 7                     &    7                        & \multicolumn{1}{l|}{7}    & 83                    &          83                   &     83                     \\ \hline
-\multirow{2}{*}{\textit{HEXA}}                      & chr15:72346571                                         & \texttt{TGTAGAAATCCTTCCAGTCA}                        & \texttt{GGG}            & 1                     &           1                 & \multicolumn{1}{l|}{1}    & 0                     &    0                        & \multicolumn{1}{l|}{0}    & 25                    &    25                        & \multicolumn{1}{l|}{25}    & 298                   & 298                          &      298                      \\
-                                           & chr15:72346578                                         & \texttt{ATCCTTCCAGTCAGGGCCAT}                        & \texttt{AGG}                                       & 1                     &         1                   & \multicolumn{1}{l|}{1}    & 0                     &        0                    & \multicolumn{1}{l|}{0}   & 6                     &       6                     & \multicolumn{1}{l|}{6}    & 203                   &     203                       &          203                  \\ \hline
-\multirow{4}{*}{\textit{PRNP}}                      & chr20:4699588                                         & \texttt{AGCAGCTGGGGCAGTGGTGG}                        & \texttt{GGG}            & 1                     &   1                         & \multicolumn{1}{l|}{1}    & 2                     &        2                    & \multicolumn{1}{l|}{2}    & 96                    &     96                       & \multicolumn{1}{l|}{96}    & 909                   &     909                       &    909                       \\
-                                           & chr20:4699589                                         & \texttt{GCAGCTGGGGCAGTGGTGGG}                        & \texttt{GGG}                                       & 1                     &           1                 & \multicolumn{1}{l|}{1}    & 12                    & 12                          & \multicolumn{1}{l|}{12}    & 100                    &       100                     & \multicolumn{1}{l|}{100}    & 1,052                 &  1,052                          &      1,052                    \\
-                                           & chr20:4699595                                         & \texttt{GGGGCAGTGGTGGGGGGCCT}                        & \texttt{TGG}                                       & 1                     &         1                  & \multicolumn{1}{l|}{1}   & 2                     &      2                      & \multicolumn{1}{l|}{2}    & 56                    & 56                         & \multicolumn{1}{l|}{56}    & 860                   & 860                           &      860                     \\
-                                           & chr20:4699598                                         & \texttt{GCAGTGGTGGGGGGCCTTGG}                        & \texttt{CGG}                                       & 1                     &          1                  & \multicolumn{1}{l|}{1}    & 0                     &      0                      & \multicolumn{1}{l|}{0}    & 32                    &   32                         & \multicolumn{1}{l|}{32}    & 421                   &           421                   &        421                  \\ \hline
-\end{tabular}
-}
-\caption{Table of on- and off-target alignments in the GRCh38.p13 for the 10 spacer sequences reported in \citet{multicrispr} using a PAM-agnostic approach. Number of mismatches between 0 and 3 were considered for 3 different aligners: Aho-Corasick exact string matching as implemented in \textit{Biostrings} (AC), \textit{Bowtie} aligner via the \textit{crisprBowtie} package (BO), and \textit{BWA} aligner via the \textit{crisprBwa} package (BW). All 3 alignment methods agree. }
-\label{supptab:offtargets}
-\end{table}
-
-
-
-%%% Off-targets figure within crisprDesign
-\begin{figure}[!h]
-\centering
-\includegraphics[width=1\textwidth]{analyses/offtargets/figures/offtarget_comparison.pdf}
-  \caption{\textbf{Comparison of computing times for off-target alignment methods implemented in \textit{crisprDesign}.} 
-  We compare computing time for the four different off-target methods available via the  \textit{addSpacerAligmments} function in \textit{crisprDesign}: \textit{Bowtie}, via the \textit{crisprBowtie} package (\texttt{Bowtie}), \textit{BWA}, via the \textit{crisprBwa} package (\texttt{bwa}), and an iterative version of both algorithms to diminish the impact of highly non-specific gRNAs on computing time (\texttt{bowtie-iter} and \texttt{bwa-iter}). Source data are provided as a Source Data file.
-  }
-  \label{suppfig:offtargets}
-\end{figure}
-
-
-%%% Off-targets figure across tools
-\begin{figure}[!h]
-\centering
-\includegraphics[width=0.75\textwidth]{figures/speed/speedAcrossTools.pdf}
-  \caption{\textbf{Comparison of computing times for subsets of human protein-coding exons.} 
-We compared computing times across tools to design gRNAs and perform a genome-wide off-target search in the human genome. 
-Six random subsets of protein-coding exons located on chr1 were used to perform the comparison. The sizes of the subsets were 100, 200, 400, 800, 1600 and 3200 exons.
-The x-axis shows the total size in nucleotides of the DNA target space formed by each subset, and the y-axis shows computing times in seconds. Details about the alignment parameters for each method can be found in the Methods section. Source data are provided as a Source Data file.}
-  \label{suppfig:speed}
-\end{figure}
-
-
-
-
-
-%%% Conservation and % CDS
-\begin{figure}[!h]
-\centering
-\includegraphics[width=1\textwidth]{figures/cons/cons.pdf}
-  \caption{\textbf{Influence of evolutionary conservation and gene target position on gRNA activity.} 
-\textbf{a-c} We annotated each gRNA present in Project Achilles with a conservation score using the function \textit{addConservationScores} implemented in \textit{crisprDesign} (see Methods). The gRNA conservation score is taken as the average DNA conservation score across nucleotides in a user-specified window around the gRNA cut site. In \textbf{a}, we show the correlation between observed gRNA activity and the conservation scores for different window sizes for essential genes. The data suggest an optimal window of 18 nucleotides around the cut site. \textbf{b} Distributions of the observed gRNA log-fold changes (LFCs) based on whether or not gRNAs are targeting regions of high conservation (positive gRNA conservation score) or regions of low conservation (negative gRNA conservation score), for gRNAs targeting essential genes. \textbf{c} Same as \textbf{b}, but for gRNAs targeting non-essential genes. \textbf{d} Relationship between gRNA activity and gRNA position within the target coding sequence (CDS) for gRNAs targeting essential genes in the Hart2015 dataset.  The Ensembl canonical transcript was used as the target CDS for each gene. The red curve represents a LOWESS trend. gRNAs located beyond the first 85\% of the CDS (to the right of the the vertical line) show a progressive decline in activity. \textbf{e} Same as \textbf{d}, but for gRNAs targeting non-essential genes.  Source data are provided as a Source Data file.
-  }
-  \label{suppfig:cons}
-\end{figure}
-
-
-
-
-
-% Supp Figure CasRx (aa genomic tracks)
-\begin{figure}
-\centering
-\includegraphics[width=01\textwidth]{analyses/casrx/sanjana//figures/casrx_supp_long.pdf}
-  \caption{\textbf{CasRx tiling screens of \textit{CD55} and \textit{CD46}.}
-Pooled FACS tiling screening data of genes \textit{CD55} (\textbf{a}) and \textit{CD46} (\textbf{b}) performed in HEK 294 cells using CasRx (\textit{Rfx}Cas13d). Processed and normalized log$_2$ fold changes were obtained from \citet{wessels2020massively}. Both screens are represented using the canonical Ensembl isoforms.  We remapped and reannotated all gRNA sequences using \textit{crisprDesign}; isoform annotation, on-target activity score using CasRx-RF as implemented in \textit{crisprScore}, and off-target alignments were added to each gRNA. The color of the dots indicates the number of isoforms targeted by each gRNA. The size of the dots is proportional to the on-target activity score. The coding sequence (CDS) is highlighted in grey. LOESS regression curves are shown as solid lines. For both genes, transcript per million (TPM) counts in HEK 293 cells summed across all isoforms overlapping a given nucleotide position are shown below the log-fold change panels. Source data are provided as a Source Data file.
-}
-  \label{suppfig:casrxlong}
-\end{figure}
-
-
-% Supp Figure CasRx (mismatch tolerance)
-\begin{figure}
-\centering
-\includegraphics[width=1\textwidth]{analyses/casrx/sanjana//figures/casrx_supp.pdf}
-  \caption{\textbf{Probability weights used for off-target scoring of CasRx gRNAs}
-\textbf{a} Boxplots of the differences in log2 fold change $(\Delta$LFC) between single-mismatch (SM) gRNAs and their corresponding perfect-match (PM) gRNAs in the GFP tiling screen. X-axis represents the mismatch position within the spacer sequence, with 1 being the position next to the direct repeat. 
-The smooth curve was obtained using LOESS regression. The dotted line represents the average log-fold change of all PM gRNAs after multiplying by -1. 
-\textbf{b} CasRx mismatch tolerance probabilities estimated from (a) and used in the CFD scoring method in \textit{crisprScore}. Source data are provided as a Source Data file.
-}
-  \label{suppfig:casrx}
-\end{figure}
 
 
 
