@@ -3,7 +3,7 @@ library(crisprDesign)
 load("objects/se.rda")
 se <- se[!grepl("rc_", rownames(se)),]
 ann <- rowData(se)
-cs <- read.csv("data/GFP_screen_crRNA_enrichments.csv")
+cs <- read.csv("../data/GFP_screen_crRNA_enrichments.csv")
 cs <- as.data.frame(cs)
 
 
@@ -68,6 +68,20 @@ dev.off()
 ######################################################
 
 
+prepareBoxplotData <- function(){
+    df <- ann[ann$n_mismatches==1,]
+    df <- as.data.frame(df)
+    df <- df[,c("spacer",
+                "protospacer",
+                "mm1", "delta")]
+    rownames(df) <- NULL
+    df <- dplyr::rename(df, position=mm1)
+    df <- dplyr::rename(df, deltaLfc=delta)
+    df
+}
+write.csv(prepareBoxplotData(),
+          row.names=FALSE,
+          file="boxplot.csv")
 
 #To save
 CasRxWeights <- data.frame(w=weights)

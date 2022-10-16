@@ -73,7 +73,12 @@ legend("topright",
        legend=rownames(data))
 dev.off()
 
+prepareData <- function(){
+    out <- data
+    colnames(out) <- ns
+    out
+}
 
-
+write.csv(prepareData(),file="timings.csv")
 
 

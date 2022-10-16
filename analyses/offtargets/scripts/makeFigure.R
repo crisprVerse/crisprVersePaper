@@ -55,3 +55,9 @@ myMatplot(results_egfr, main="EGFR",ylim=ylim)
 ylim=c(0,350)
 myMatplot(results_znf, main="ZNF101",ylim=ylim)
 dev.off()
+
+
+write.csv(results_kras, file="results_kras.csv")
+write.csv(results_egfr, file="results_egfr.csv")
+write.csv(results_znf, file="results_znf.csv")
+

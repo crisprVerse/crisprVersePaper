@@ -23,7 +23,6 @@ getLogFC <- function(se){
     pheno <- colData(se)
     Y <- log2(assays(se)[[1]]+1)
     Y1 <- Y[, pheno$Condition=="top"]
-    #Y1 <- Y[, pheno$Condition=="top"]
     Y2 <- Y[, pheno$Condition=="input"]
     rowMeans(Y1-Y2)
 }
@@ -351,9 +350,44 @@ points(x,
 lines(x,predict(loess(y~x, span=0.05)), lwd=1)
 dev.off()
 
+getData1 <- function(){
+    guides <- guidesCD46
+    grna <- as.character(spacers(guides))
+    gene <- "CD46"
+    ntx <- guides$ntx
+    x=pamSites(guides)
+    y=guides$cs
+    out <- data.frame(grna=grna,
+                      gene=gene,
+                      pos=x,
+                      lfc=y,
+                      ntx=ntx,
+                      score_casrxrf=guides$score_casrxrf)
+    rownames(out) <- NULL
+    out
+}
 
+getData2 <- function(){
+    guides <- guidesCD55
+    grna <- as.character(spacers(guides))
+    gene <- "CD55"
+    ntx <- guides$ntx
+    x=pamSites(guides)
+    y=guides$cs
+    out <- data.frame(grna=grna,
+                      gene=gene,
+                      pos=x,
+                      lfc=y,
+                      ntx=ntx,
+                      score_casrxrf=guides$score_casrxrf)
+    rownames(out) <- NULL
+    out
+}
 
-
+data1 <- getData1()
+data2 <- getData2()
+toSave <- rbind(data1,data2)
+write.csv(toSave, file="tiling.csv", row.names=FALSE)
 
 pdf("figures/cd55_zigzag.pdf", width=10, height=4)
 guides <- guidesCD55
