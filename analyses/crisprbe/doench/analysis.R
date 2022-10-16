@@ -11,7 +11,6 @@ load("objects/se.rda")
 
 # Removing guides with off-targets
 guideSet <- addSpacerAlignments(guideSet,
-                                bsgenome=bsgenome,
                                 txObject=txObject,
                                 n_mismatches=2,
                                 aligner_index=bowtie_index,
@@ -24,16 +23,18 @@ guideSet <- guideSet[good]
 # Getting log-fold change:
 Y <- assays(se)[[1]]
 
+
 # Normalization
 factors <- colSums(Y)
 factors <- factors/median(factors)
 Y <- sweep(Y, 2, factors, "/")
 assays(se)[[1]] <- Y
 
+
 # Filtering
 Y <- log2(Y+1)
 pdna <- Y[,1]
-bad <-which(pdna<=(mean(pdna)-3*sd(pdna)))
+bad <- which(pdna<=(mean(pdna)-3*sd(pdna)))
 se <- se[-bad,]
 
 
@@ -178,4 +179,20 @@ cor(gs$score_ruleset1, y, method=method)
 cor(gs$score_azimuth, y, method=method)
 cor(gs$score_deephf, y, method=method)
 
+
+
+prepareData <- function(){
+    grna <- as.character(spacers(gs))
+    out <- data.frame(grna=grna)
+    out$score_deephf <- gs$score_deephf
+    out$score_ruleset1 <- gs$score_ruleset1
+    out$score_azimuth <- gs$score_azimuth
+    out$lfc <- gs$lfc
+    out$variant <- gs$maxVariant
+    rownames(out) <- NULL
+    out
+}
+
+data <- prepareData()
+write.csv(data, file="scoringData.csv", row.names=FALSE)
 

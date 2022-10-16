@@ -103,6 +103,33 @@ plotScore(gs)
 dev.off()
 
 
+prepareData <- function(){
+     grna <- as.character(spacers(gs))
+     y <- gs$score_nonsense
+     z <- gs$score_deephf
+     pam <- pamSites(gs)
+     x <- txTable$aa_number[match(pam, txTable$pos)]
+     good <- !is.na(x) & gs$maxVariant!="not_targeting"
+     label <- gs$maxVariant
+     gg <- grna[good]
+     xx <- x[good]
+     yy <- y[good]
+     zz <- z[good]
+     labell <- label[good]
+     out <- data.frame(grna=gg,
+                       aminoAcid=xx,
+                       scoreDeepHF=zz,
+                       scoreNonsense=yy,
+                       label=labell)
+     return(out)   
+}
+
+aaData <- prepareData()
+write.csv(aaData,
+          file="nonsenseData.csv",
+          row.names=FALSE)
+
+
 ### Looking at one example:
 cond1 <- gs$score_nonsense<0.4
 cond2 <- gs$score_nonsense>0.3

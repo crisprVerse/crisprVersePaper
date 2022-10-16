@@ -153,6 +153,57 @@ cor(x,y)
 abline(h=0, lty=3)
 
 
+pdf("figures/off_target_1mm.pdf", width=2.5, height=4)
+library(scales)
+x <- test$predicted_lfc[col==1]
+y <- test$lfc[col==1]
+cex <- test$score[col==2]
+cor(x,y)
+col1 <- "firebrick2"
+col2 <- "firebrick3"
+plot(x,y,
+     bty="L",
+     xaxt="n",
+     yaxt="n",
+     xlab="",
+     ylab="",
+     xlim=c(0,1.2),
+     ylim=c(-1,2),
+     pch=20,
+     cex=0.3,
+     col=alpha(col1,0.3))
+axis(side=1, at=c(0, 0.5, 1))
+axis(side=2, at=c(-1, 0, 1,2))
+lines(lowess(y~x, f=0.7),lwd=2, col=col2)
+abline(h=0, lty=3)
+cor(x,y)
+dev.off()
+
+
+prepareMmData <- function(){
+     out <- test
+     out <- out[col==1,]
+     out <- out[, c("ID",
+                    "spacer", "protospacer",
+                    "lfc", "predicted_lfc")]
+     rownames(out) <- NULL
+     out$n_mismatches <- 1
+     out1 <- out
+
+     out <- test
+     out <- out[col==2,]
+     out <- out[, c("ID",
+                    "spacer", "protospacer",
+                    "lfc", "predicted_lfc")]
+     rownames(out) <- NULL
+     out$n_mismatches <- 2
+     out2 <- out
+     out <- rbind(out1,out2)
+     return(out)
+}
+
+mmData <- prepareMmData()
+write.csv(mmData, file="mmData.csv", row.names=FALSE)
 
 
 ###### Off-target figures ######
@@ -183,31 +234,7 @@ cor(x,y)
 dev.off()
 
 
-pdf("figures/off_target_1mm.pdf", width=2.5, height=4)
-library(scales)
-x <- test$predicted_lfc[col==1]
-y <- test$lfc[col==1]
-cex <- test$score[col==2]
-cor(x,y)
-col1 <- "firebrick2"
-col2 <- "firebrick3"
-plot(x,y,
-     bty="L",
-     xaxt="n",
-     yaxt="n",
-     xlab="",
-     ylab="",
-     xlim=c(0,1.2),
-     ylim=c(-1,2),
-     pch=20,
-     cex=0.3,
-     col=alpha(col1,0.3))
-axis(side=1, at=c(0, 0.5, 1))
-axis(side=2, at=c(-1, 0, 1,2))
-lines(lowess(y~x, f=0.7),lwd=2, col=col2)
-abline(h=0, lty=3)
-cor(x,y)
-dev.off()
+
 
 
 ###### Off-target figures ######

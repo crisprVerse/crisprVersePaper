@@ -98,6 +98,32 @@ results <- do.call(rbind, results)
 results_neg <- do.call(rbind, results_neg)
 pvals <- do.call(rbind, pvals)
 pvals_neg <- do.call(rbind, pvals_neg)
+rownames(results) <- rownames(pvals) <- names(rankings)
+
+#For Data Source File:
+write.csv(pvals, file="pvals.csv")
+write.csv(-results, file="deltas.csv")
+
+for (k in 1:5){
+    df <- rankings[[k]]
+    colsToKeep <- c("rank_cctop",
+                    "rank_flash", 
+                    "rank_cpick",
+                    "rank_chopchop",
+                    "rank_crisprverse",
+                    "lfc")
+    df <- df[,colsToKeep]
+    rownames(df) <- NULL
+    df$lfc <- round(df$lfc,3)
+    name <- names(rankings)[k]
+    write.csv(df,
+              row.names=FALSE,
+              file=paste0("rankings_", name, ".csv"))
+}
+
+
+
+
 
 # Ordering
 meds <- colMeans(results)

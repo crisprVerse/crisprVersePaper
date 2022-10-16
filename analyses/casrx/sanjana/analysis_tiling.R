@@ -440,6 +440,28 @@ legend("topleft", lty=1, bty="n",
 dev.off()
 
 
+prepareDensityData <- function(){
+    guides <- guidesCD46
+    xcutoff <- metadata(guides)[["cds_end"]]
+    aa <- guides[pamSites(guides)<=xcutoff]
+    grna <- as.character(spacers(aa))
+    txcutoff=11
+    cutoff=0.5
+    common <- aa$ntx>=txcutoff
+    highScore <- aa$score_casrxrf>=cutoff
+    out <- data.frame(grna=grna,
+                      score_casrxrf=aa$score_casrxrf,
+                      lfc=aa$cs,
+                      commonExon=common,
+                      highScore=highScore)
+    rownames(out) <- NULL
+    out
+}
+
+write.csv(prepareDensityData(),
+          file="densitydata.csv",
+          row.names=FALSE)
+
 
 pdf("figures/densities_deepcas13.pdf", width=4, height=4)
 guides <- guidesCD46
@@ -509,7 +531,10 @@ lfc[[2]] <- lfc[[2]]/medians[[2]]
 lfc <- do.call(c, lfc)
 score <- lapply(guides, function(x) x$score_casrxrf)
 score <- do.call(c, score)
-
+grnas <- lapply(guides, function(x){
+    as.character(spacers(x))
+})
+grnas <- do.call(c, grnas)
 
 
 pdf("figures/on_target.pdf", width=4, height=4)
@@ -538,6 +563,17 @@ dev.off()
 
 
 
+prepareOnTargetData <- function(){
+    out <- data.frame(grna=grnas,
+                      score_casrxrf=score,
+                      lfc=lfc)
+    out
+}
+
+
+write.csv(prepareOnTargetData(),
+          file="ontarget.csv",
+          row.names=FALSE)
 
 
 pdf("figures/isoforms_relationship.pdf", 
@@ -585,8 +621,53 @@ abline(h=0, lty=3)
 dev.off()
 
 
+prepareIsoformData <- function(){
+    guides <- guidesCD46
+    ntx <- guides$ntx
+    tpm <- guides$tpm
+    x=pamSites(guides)
+    y=guides$cs
+    tpm <- guides$tpm
+    cat <- rep("CDS", length(x))
+    cat[x<=metadata(guides)$cds_start] <- "5utr"
+    cat[x>=metadata(guides)$cds_end] <- "3utr"
+    cat[cat=="CDS" & ntx>=10] <- "high"
+    cat[cat=="CDS" & ntx<10]  <- "low"
+    grna <- as.character(spacers(guides))
+    out1 <- data.frame(gnra=grna,
+                       nIsoforms=ntx,
+                       TPM=tpm,
+                       region=cat,
+                       lfc=y,
+                       gene="CD46")
+   
+    guides <- guidesCD55
+    ntx <- guides$ntx
+    tpm <- guides$tpm
+    x=pamSites(guides)
+    y=guides$cs
+    cat <- rep("CDS", length(x))
+    cat[x<=metadata(guides)$cds_start] <- "5utr"
+    cat[x>=metadata(guides)$cds_end] <- "3utr"
+    cat[cat=="CDS" & ntx>=4] <- "high"
+    cat[cat=="CDS" & ntx<4]  <- "low"
+    grna <- as.character(spacers(guides))
+    out2 <- data.frame(gnra=grna,
+                       nIsoforms=ntx,
+                       TPM=tpm,
+                       region=cat,
+                       lfc=y,
+                       gene="CD55")
+    out <- rbind(out1,out2)
+    rownames(out) <- NULL
+    out  
+}
 
 
+
+write.csv(prepareIsoformData(),
+          file="isoform.csv",
+          row.names=FALSE)
 
 
 
