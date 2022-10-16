@@ -189,7 +189,7 @@ The \textit{TxDb} object is a standard Bioconductor object to store information 
 
 
 % Off-target alignment comparison
-\subsubsection*{Comparison of the off-target alignment methods}
+\subsection*{Comparison of the off-target alignment methods}
 
 
 We first compared the accuracy of the three alignment methods implemented in \textit{crisprDesign}. \citet{multicrispr} reported that \textit{Bowtie} misses a large number of double-mismatch and triple-mismatch off-targets in comparison to the gold-standard complete string matching algorithm.
@@ -626,8 +626,14 @@ All figures were made in R (4.2.1), with the exception of the following figures 
 
 
 We deposited chromatin accessibility data necessary for the CRISPRai on-target algorithm on Zenodo (\url{https://www.doi.org/10.5281/zenodo.6716721}).
-We deposited fasta files, \textit{Bowtie} indexes and \textit{BWA} indexes for the major and minor alleles of hg38 using dbSNP151 on Zenodo (\url{https://www.doi.org/10.5281/zenodo.6862556}). We precomputed and fully annotated gRNAs for human and mouse protein-coding genes using \textit{crisprDesign} for the following nucleases: SpCas9, enAsCas12a, and CasRx. Ensembl release 104 and Ensembl release 102 were used to define genes for human and mouse, respectively. Separate datasets were generated for the CRISPRko, CRISPRa, CRISPRi, and CRISPRkd modalities. All files are available on Zenodo (\url{https://www.doi.org/10.5281/zenodo.7042164}).  CasRx FACS pooled screening data tiling CD55, CD46 and GFP were obtained from \url{https://gitlab.com/sanjanalab/cas13}. Dropout screen data in the MelJuSo cell line using a gRNA library tiling BRCA1 were obtained from \url{https://www.cell.com/cms/10.1016/j.cell.2021.01.012/attachment/98851720-ecfa-49fb-947b-6f4c8976cbc5/mmc2.xlsx}. Common SNPs were obtained from NCBI dbSNP build 151 (\url{https://ftp.ncbi.nlm.nih.gov/snp/}).
-RIKEN/ENCODE CAGE peaks were obtained from AnnotationHub using accession number AH5084.DNAse I hypersensitive sites were obtained from AnnotationHub using accession number AH30743. Achilles screening data was obtained from the DepMap portal (\url{https://depmap.org/portal/download/all}).Hart2015 and Hart2017 datasets were obtained from \url{http://tko.ccbr.utoronto.ca/}.Wang2015 dataset was obtained from \url{https://www.science.org/doi/10.1126/science.aac7041}.Tzelepis2016 dataset was obtained from \url{https://pubmed.ncbi.nlm.nih.gov/27760321/}. Source data are provided with this paper.
+We deposited fasta files, \textit{Bowtie} indexes and \textit{BWA} indexes for the major and minor alleles of hg38 using dbSNP151 on Zenodo (\url{https://www.doi.org/10.5281/zenodo.6862556}). We precomputed and fully annotated gRNAs for human and mouse protein-coding genes using \textit{crisprDesign} for the following nucleases: SpCas9, enAsCas12a, and CasRx. Ensembl release 104 and Ensembl release 102 were used to define genes for human and mouse, respectively. Separate datasets were generated for the CRISPRko, CRISPRa, CRISPRi, and CRISPRkd modalities. All files are available on Zenodo (\url{https://www.doi.org/10.5281/zenodo.7042164}).  CasRx FACS pooled screening data tiling CD55, CD46 and GFP were obtained from \url{https://gitlab.com/sanjanalab/cas13}. 
+Dropout screen data in the MelJuSo cell line using a gRNA library tiling BRCA1 were obtained from \url{https://www.cell.com/cms/10.1016/j.cell.2021.01.012/attachment/98851720-ecfa-49fb-947b-6f4c8976cbc5/mmc2.xlsx}. Common SNPs were obtained from NCBI dbSNP build 151 (\url{https://ftp.ncbi.nlm.nih.gov/snp/}).
+RIKEN/ENCODE CAGE peaks were obtained from AnnotationHub using accession number AH5084.
+DNAse I hypersensitive sites were obtained from AnnotationHub using accession number AH30743. 
+Achilles screening data was obtained from the DepMap portal (\url{https://depmap.org/portal/download/all}).
+Hart2015 and Hart2017 datasets were obtained from \url{http://tko.ccbr.utoronto.ca/}.
+Wang2015 dataset was obtained from \url{https://www.science.org/doi/10.1126/science.aac7041}.
+Tzelepis2016 dataset was obtained from \url{https://pubmed.ncbi.nlm.nih.gov/27760321/}. Source data are provided with this paper.
 
 
 
@@ -731,7 +737,7 @@ The remaining authors declare no competing interests.
 %%% Figure1 : Nuclease figure
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1\textwidth]{finalFigures/Figure1.pdf}
+\includegraphics[width=1\textwidth]{Figure1.pdf}
   \caption{\textbf{Examples of DNA- and RNA-targeting nucleases represented in \textit{crisprBase}.} gRNA spacer sequences are shown in yellow. Target DNA/RNA protospacer sequences are shown in blue. Protospacer adjacent motifs (PAMs) and protospacer flanking sequences (PFSs) are shown in orange. Nuclease-specific cutting sites are represented by black triangles. For the C to T base editor BE4max, on-target editing happens on the DNA strand containing the protospacer sequence. The editing window varies by base editor. The first nucleotide of the PAM/PFS is used as the representative coordinate of a given target sequence. 
   }
   \label{fig:nucleases}
@@ -817,7 +823,7 @@ The remaining authors declare no competing interests.
 %%% Figure 2:GuideSet figure
 \begin{figure}
 \centering
-\includegraphics[width=0.83\textwidth]{finalFigures/Figure2.pdf}
+\includegraphics[width=0.83\textwidth]{Figure2.pdf}
   \caption{\textbf{Example of a GuideSet container for gRNAs targeting \textit{KRAS} using SpCas9.} 
  \textbf{a} The blue box stores the genomic coordinates in GRCh38 to represent the target protospacer sequences using a GRanges object. 
 By convention, we use the first nucleotide of the PAM sequence (in the 5$^{\prime}$ to 3$^{\prime}$ direction) as the representative genomic coordinate of protospacer sequences. The pink box stores sequence information of the protospacers and PAMs. The yellow box represents global metadata used for creating the GuideSet, including a formal \textit{CrisprNuclease} object, the reference genome of the target protospacers, and gene model used for annotation. The grey boxes are examples of optional gRNA-level metadata columns that store information about enzyme restriction sites, spacer sequence features such as GC content, and on- and off-target scores. The green boxes represent optional per-gRNA annotations for SNP overlap, on- and off-target alignments, and gene context; each annotation stores a detailed table (2 dimensions) for each gRNA (3rd dimension). 
@@ -882,7 +888,7 @@ Tzelepis2016  &     Yusa     &  HL60     &   85,192 &         \citet{yusa}
 %%% Figure 3: Rankings figures
 \begin{figure}
 \centering
-\includegraphics[width=0.7\textwidth]{finalFigures/Figure3.pdf}
+\includegraphics[width=0.7\textwidth]{Figure3.pdf}
   \caption{\textbf{Comparison of CRISPRko Cas9 gRNA rankings for protein-coding human genes.} We designed and ranked gRNAs targeting all protein-coding human genes (Ensembl release 104) using tools that provide gRNA rankings: \textit{CCTop}, \textit{CHOPCHOP}, \textit{FlashFry}, \textit{CRISPick} and \textit{crisprDesign}. To compare gRNA ranking performance across tools, we obtained gRNA LFCs from 5 genome-wide CRISPRko fitness screening datasets, listed in Table~\ref{tab:screens}. In these fitness screens, active gRNAs targeting essential genes are expected to drop out and show negative LFCs. To investigate the relationship between gRNA activity and gRNA ranking, we considered for each gRNA library the subset of gRNAs targeting a common reference set of essential genes \citep{hart2014}. For each gene and tool, we identified the top 15 ranked gRNAs based on the tool-specific in silico ranking. \textbf{a} LFC distributions in the Hart2015 dataset for gRNAs targeting essential genes (solid lines) and gRNAs targeting non-essential genes (dotted lines). Red lines show the distributions of the top 15 ranked gRNAs across genes, and green lines show the distributions of remaining gRNAs. For essential genes, top ranked gRNAs from \textit{CRISPick} and \textit{crisprDesign} show greater activity than lower ranked gRNAs (red distributions are negatively skewed). As expected, there are no differences for gRNAs targeting non-essential genes. \textbf{b} We repeated the analysis described in \textbf{a} for each dataset. We summarized the performance of the top ranked gRNAs by calculating the difference in means between the green and red distributions ($\Delta$ LFC), for essential genes only. A higher $\Delta$ LFC indicates better performance.  For each method and dataset, a two-sided t-test was performed to quantify the difference in LFCs between the top ranked gRNAs and the remaining gRNAs. Corresponding p-values are reported above the bars ($*$: p-value $<0.05$; $**$: p-value $<0.01$; $***$: p-value $<0.001$). Source data are provided as a Source Data file.
   }
   \label{fig:rankings}
@@ -894,7 +900,7 @@ Tzelepis2016  &     Yusa     &  HL60     &   85,192 &         \citet{yusa}
 %%% Figure 4: CRISPRbe
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{finalFigures/Figure4.pdf}
+\includegraphics[width=1\textwidth]{Figure4.pdf}
   \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{BRCA1} using the base editor BE4max.}
 On the left: schematic showing the major steps involved in designing BE4max gRNAs targeting \textit{BRCA1}.
 Two inputs are required: DNA sequences of \textit{BRCA1} exons and a 
@@ -913,7 +919,7 @@ Two inputs are required: DNA sequences of \textit{BRCA1} exons and a
 %%% Figure 5: CRISPR-CasRx
 \begin{figure}
 \centering
-\includegraphics[width=0.85\textwidth]{finalFigures/Figure5.pdf}
+\includegraphics[width=0.85\textwidth]{Figure5.pdf}
   \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{CD55} and \textit{CD46} using CasRx.} 
   On the left: schematic showing the major steps involved in designing CasRx gRNAs targeting \textit{CD55} and \textit{CD46}.
 Two inputs are required: mRNA sequences of \textit{CD55} and \textit{CD46} and a 
@@ -933,7 +939,7 @@ Two inputs are required: mRNA sequences of \textit{CD55} and \textit{CD46} and a
 %%% Figure 6: CRISPRa
 \begin{figure}
 \centering
-\includegraphics[width=0.9\textwidth]{finalFigures/Figure6.pdf}
+\includegraphics[width=0.9\textwidth]{Figure6.pdf}
   \caption{\textbf{Design of CRISPRa gRNAs for human gene \textit{MMP7} for different CRISPR nucleases.} 
   \textbf{a} Schematic showing the steps involved in designing CRISPRa gRNAs targeting the promoter region of \textit{MMP7}.
 A gene model and a list of CAGE peaks are used to define the optimal window for gene activation. 
