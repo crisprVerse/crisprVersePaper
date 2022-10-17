@@ -626,10 +626,13 @@ cat[x>=metadata(guides)$cds_end] <- "3utr"
 cat[cat=="CDS" & ntx>=10] <- "high"
 cat[cat=="CDS" & ntx<10]  <- "low"
 dfs <- split(y, f=cat)
+ns <- vapply(dfs, length, FUN.VALUE=1)
+#3utr 5utr high  low 
+# 945  110  459  246 
 names(dfs) <- NULL
 boxplot(dfs[c(1,2,4,3)],
         col=col,
-        ylim=c(-1.5, 3),
+        ylim=c(-1.5, 4),
         xaxt="n",
         las=2,
         outline=FALSE)
@@ -646,6 +649,9 @@ cat[x>=metadata(guides)$cds_end] <- "3utr"
 cat[cat=="CDS" & ntx>=4] <- "high"
 cat[cat=="CDS" & ntx<4]  <- "low"
 dfs <- split(y, f=cat)
+ns <- vapply(dfs, length, FUN.VALUE=1)
+#3utr 5utr high  low 
+# 750   63  905   19 
 boxplot(dfs[c(1,2,4,3)],
         col=col,
         xaxt="n",

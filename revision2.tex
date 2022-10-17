@@ -57,7 +57,7 @@
 \title{The crisprVerse: a comprehensive Bioconductor ecosystem for the design of CRISPR guide RNAs across nucleases and technologies}
 \author[1]{Luke Hoberecht}
 \author[2]{Pirunthan Perampalam}
-\author[1]{Aaron Lun}
+\author[1]{Aaron TL Lun}
 \author[1,*]{Jean-Philippe Fortin}
 \affil[1]{Genentech Research and Early Development, Genentech, Inc., 1 DNA Way, South San Francisco, CA, 94080, USA}
 \affil[2]{ProCogia Inc. under contract to Hoffmann-La Roche Limited}
@@ -88,9 +88,6 @@ The \textit{crisprVerse} ecosystem is open-source and deployed through the Bioco
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Introduction}
 
-
-%\fixme{Whiskers ranging from minima to maxima, median and 25?75\% interquartile range (IQR) shown by boxplots}
-%\fixme{Box-plot elements are defined (e.g. center line, median; box limits, upper and lower quartiles; whiskers, 1.5x interquartile range; points, outliers)}
 
 The performance of CRISPR-based experiments depends critically on the choice of the guide RNAs (gRNAs) used to guide the CRISPR nuclease to the target site.
 Variable gRNA on-target activity, as well as unintended off-targeting effects, can lead to inconsistent phenotypic readouts in screening experiments. 
@@ -618,8 +615,6 @@ The \textit{Library design} section indicates which library design features are 
 All figures were made in R (4.2.1), with the exception of the following figures that were made in Microsoft PowerPoint (v16.64): Figure~\ref{fig:nucleases}, Figure~\ref{fig:guideset}a-b, and the workflow diagrams of Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx} and Figure~\ref{fig:crispra}.  Figure~\ref{fig:guideset}c and Figure~\ref{fig:crispra}b were made using the R package \textit{Gviz} (v1.41.1). Figure~\ref{fig:rankings}, Figure~\ref{fig:crisprbe}, Figure~\ref{fig:casrx}, Supplementary Figure 1, Supplementary Figure 3, Supplementary Figure 4 and Supplementary Figure 5 were made using base plotting functions in R. Reproducible code to generate all figures can be found in our \href{https://github.com/crisprVerse/crisprVersePaper}{GitHub manuscript repository}. 
 
 
-
-
 % Data availability
 
 \section*{Data availability}
@@ -664,44 +659,6 @@ Documentation about the installation and usage of the container can be found \hr
 
 
 
-
-
-
-
-
-%% Abbreviations
-%\section*{Abbreviations}
-%
-%
-%\begin{itemize}
-%\item ABE: adenine base editor
-%\item BWA: Burrows-Wheeler Aligner
-%\item CAGE: Cap Analysis of Gene Expression
-%\item CBE: cytosine base editor
-%\item CCLE: cancer cell line encyclopedia
-%\item CDS: coding DNA sequence
-%\item CFD: cutting frequency determination
-%\item CLI: command line interface
-%\item CRISPR: clustered regularly interspaced short palindromic repeats
-%\item CRISPRa: CRISPR activation
-%\item CRISPRbe: CRISPR  base editing
-%\item CRISPRi: CRISPR interference
-%\item DHS: DNAse I hypersensitive site
-%\item DSB: DNA double-strand break
-%\item FACS: fluorescence-activated cell sorting
-%\item LFC: log-fold change
-%\item lncRNAs: long non-coding RNAs
-%\item MAF: minor allele frequency
-%\item OPS: optical pooled screening
-%\item PAM: protospacer adjacent motif
-%\item PE: prime editing
-%\item pegRNA: prime editing guide RNA
-%\item PFS: protospacer flanking sequence
-%\item RNAi: RNA interference
-%\item gRNA: single-guide RNA
-%\item SNP: single-nucleotide polymorphism
-%\item TSS: transcription starting site
-%\end{itemize}
 
 
 
@@ -889,7 +846,7 @@ Tzelepis2016  &     Yusa     &  HL60     &   85,192 &         \citet{yusa}
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{Figure3.pdf}
-  \caption{\textbf{Comparison of CRISPRko Cas9 gRNA rankings for protein-coding human genes.} We designed and ranked gRNAs targeting all protein-coding human genes (Ensembl release 104) using tools that provide gRNA rankings: \textit{CCTop}, \textit{CHOPCHOP}, \textit{FlashFry}, \textit{CRISPick} and \textit{crisprDesign}. To compare gRNA ranking performance across tools, we obtained gRNA LFCs from 5 genome-wide CRISPRko fitness screening datasets, listed in Table~\ref{tab:screens}. In these fitness screens, active gRNAs targeting essential genes are expected to drop out and show negative LFCs. To investigate the relationship between gRNA activity and gRNA ranking, we considered for each gRNA library the subset of gRNAs targeting a common reference set of essential genes \citep{hart2014}. For each gene and tool, we identified the top 15 ranked gRNAs based on the tool-specific in silico ranking. \textbf{a} LFC distributions in the Hart2015 dataset for gRNAs targeting essential genes (solid lines) and gRNAs targeting non-essential genes (dotted lines). Red lines show the distributions of the top 15 ranked gRNAs across genes, and green lines show the distributions of remaining gRNAs. For essential genes, top ranked gRNAs from \textit{CRISPick} and \textit{crisprDesign} show greater activity than lower ranked gRNAs (red distributions are negatively skewed). As expected, there are no differences for gRNAs targeting non-essential genes. \textbf{b} We repeated the analysis described in \textbf{a} for each dataset. We summarized the performance of the top ranked gRNAs by calculating the difference in means between the green and red distributions ($\Delta$ LFC), for essential genes only. A higher $\Delta$ LFC indicates better performance.  For each method and dataset, a two-sided t-test was performed to quantify the difference in LFCs between the top ranked gRNAs and the remaining gRNAs. Corresponding p-values are reported above the bars ($*$: p-value $<0.05$; $**$: p-value $<0.01$; $***$: p-value $<0.001$). Source data are provided as a Source Data file.
+  \caption{\textbf{Comparison of CRISPRko Cas9 gRNA rankings for protein-coding human genes.} We designed and ranked gRNAs targeting all protein-coding human genes (Ensembl release 104) using tools that provide gRNA rankings: \textit{CCTop}, \textit{CHOPCHOP}, \textit{FlashFry}, \textit{CRISPick} and \textit{crisprDesign}. To compare gRNA ranking performance across tools, we obtained gRNA LFCs from 5 genome-wide CRISPRko fitness screening datasets, listed in Table~\ref{tab:screens}. In these fitness screens, active gRNAs targeting essential genes are expected to drop out and show negative LFCs. To investigate the relationship between gRNA activity and gRNA ranking, we considered for each gRNA library the subset of gRNAs targeting a common reference set of essential genes \citep{hart2014}. For each gene and tool, we identified the top 15 ranked gRNAs based on the tool-specific in silico ranking. \textbf{a} LFC distributions in the Hart2015 dataset for gRNAs targeting essential genes (solid lines) and gRNAs targeting non-essential genes (dotted lines). Red lines show the distributions of the top 15 ranked gRNAs across genes, and green lines show the distributions of remaining gRNAs. For essential genes, top ranked gRNAs from \textit{CRISPick} and \textit{crisprDesign} show greater activity than lower ranked gRNAs (red distributions are negatively skewed). As expected, there are no differences for gRNAs targeting non-essential genes. \textbf{b} We repeated the analysis described in \textbf{a} for each dataset. We summarized the performance of the top ranked gRNAs by calculating the difference in means between the green and red distributions ($\Delta$ LFC), for essential genes only. A higher $\Delta$ LFC indicates better performance.  For each method and dataset, a two-sided t-test was performed to quantify the difference in LFCs between the top ranked gRNAs and the remaining gRNAs. Corresponding p-values are reported above the bars ($*$: p-value $<0.05$; $**$: p-value $<0.01$; $***$: p-value $<0.001$). Exact p-values are provided in the source data. Source data are provided as a Source Data file.
   }
   \label{fig:rankings}
 \end{figure}
@@ -900,7 +857,7 @@ Tzelepis2016  &     Yusa     &  HL60     &   85,192 &         \citet{yusa}
 %%% Figure 4: CRISPRbe
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{Figure4.pdf}
+\includegraphics[width=0.95\textwidth]{Figure4.pdf}
   \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{BRCA1} using the base editor BE4max.}
 On the left: schematic showing the major steps involved in designing BE4max gRNAs targeting \textit{BRCA1}.
 Two inputs are required: DNA sequences of \textit{BRCA1} exons and a 
@@ -919,19 +876,19 @@ Two inputs are required: DNA sequences of \textit{BRCA1} exons and a
 %%% Figure 5: CRISPR-CasRx
 \begin{figure}
 \centering
-\includegraphics[width=0.85\textwidth]{Figure5.pdf}
+\includegraphics[width=0.8\textwidth]{Figure5.pdf}
   \caption{\textbf{\textit{crisprDesign} workflow to design gRNAs tiling \textit{CD55} and \textit{CD46} using CasRx.} 
   On the left: schematic showing the major steps involved in designing CasRx gRNAs targeting \textit{CD55} and \textit{CD46}.
 Two inputs are required: mRNA sequences of \textit{CD55} and \textit{CD46} and a 
 \textit{CrisprNuclease} object from \textit{crisprBase}. 
 \textbf{a} Relationship between on-target CasRx-RF score calculated in \textit{crisprScore} and LFCs from the pooled FACS tiling CasRx screening data (see Methods). A higher LFC indicates higher gRNA activity.
-\textbf{b} Relationship between LFCs from the CasRx screening data and gRNA context for \textit{CD46} and \textit{CD55}: gRNAs targeting 5$^\prime$ UTR and 3$^\prime$ UTR for the canonical transcript, and guides targeting a low and high number of isoforms for each of the genes. gRNAs targeting more isoforms show higher enrichment in the screening data. The full isoform annotation is stored in the \textit{GuideSet} objects.
+\textbf{b} Relationship between LFCs from the CasRx screening data and gRNA context for \textit{CD46} and \textit{CD55}: gRNAs targeting 5$^\prime$ UTR and 3$^\prime$ UTR for the canonical transcript, and guides targeting a low and high number of isoforms for each of the genes. gRNAs targeting more isoforms show higher enrichment in the screening data.  
+The boxes represent the $25-75\%$ interquartile ranges (IQR), and the central lines represent the median values. The whiskers extend 1.5 times the IQR from the median value. 
+The number of data points for each boxplot is specified above the whiskers. The full isoform annotation is stored in the \textit{GuideSet} objects. 
 \textbf{c} Left: relationship between observed LFCs of on-target gRNAs in the \textit{CD55} screen and predicted LFCs of single-mismatch gRNAs using the off-target CFD-CasRx score implemented in \textit{crisprScore} (see Methods). Right: same as left, but for double-mismatch gRNAs.
 \textbf{d} gRNAs selected in the \textit{CD46} screen for high on-target activity (CasRx-RF score) and targeting a common exon across all protein-coding isoforms enrich for high gRNA activity. Source data are provided as a Source Data file.}
   \label{fig:casrx}
 \end{figure}
-
-
 
 
 

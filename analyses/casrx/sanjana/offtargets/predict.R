@@ -3,7 +3,7 @@ library(crisprDesign)
 load("objects/se.rda")
 se <- se[!grepl("rc_", rownames(se)),]
 ann <- rowData(se)
-cs <- read.csv("data/GFP_screen_crRNA_enrichments.csv")
+cs <- read.csv("../data/GFP_screen_crRNA_enrichments.csv")
 cs <- as.data.frame(cs)
 
 
@@ -39,6 +39,7 @@ boxplot(rev(dfs),
         outline=FALSE,
         cex.axis=0.7,
         las=2)
+ns <- vapply(rev(dfs), length, FUN.VALUE=1)
 abline(h=0, lty=3)
 max_delta <- median(ann$lfc[ann$n_mismatches==0])
 
