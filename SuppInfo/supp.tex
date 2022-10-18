@@ -121,7 +121,7 @@
 %%% Off-targets figure within crisprDesign
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1\textwidth]{analyses/offtargets/figures/offtarget_comparison.pdf}
+\includegraphics[width=1\textwidth]{../analyses/offtargets/figures/offtarget_comparison.pdf}
   \caption{\textbf{Comparison of computing times for off-target alignment methods implemented in \textit{crisprDesign}.} 
   We compare computing time for the four different off-target methods available via the  \textit{addSpacerAligmments} function in \textit{crisprDesign}: \textit{Bowtie}, via the \textit{crisprBowtie} package (\texttt{Bowtie}), \textit{BWA}, via the \textit{crisprBwa} package (\texttt{bwa}), and an iterative version of both algorithms to diminish the impact of highly non-specific gRNAs on computing time (\texttt{bowtie-iter} and \texttt{bwa-iter}). Source data are provided as a Source Data file.
   }
@@ -132,7 +132,7 @@
 %%% Off-targets figure across tools
 \begin{figure}[!h]
 \centering
-\includegraphics[width=0.75\textwidth]{figures/speed/speedAcrossTools.pdf}
+\includegraphics[width=0.75\textwidth]{../figures/speed/speedAcrossTools.pdf}
   \caption{\textbf{Comparison of computing times for subsets of human protein-coding exons.} 
 We compared computing times across tools to design gRNAs and perform a genome-wide off-target search in the human genome. 
 Six random subsets of protein-coding exons located on chr1 were used to perform the comparison. The sizes of the subsets were 100, 200, 400, 800, 1600 and 3200 exons.
@@ -147,7 +147,7 @@ The x-axis shows the total size in nucleotides of the DNA target space formed by
 %%% Conservation and % CDS
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1\textwidth]{figures/cons/cons.pdf}
+\includegraphics[width=1\textwidth]{../figures/cons/cons.pdf}
   \caption{\textbf{Influence of evolutionary conservation and gene target position on gRNA activity.} 
 \textbf{a-c} We annotated each gRNA present in Project Achilles with a conservation score using the function \textit{addConservationScores} implemented in \textit{crisprDesign} (see Methods). The gRNA conservation score is taken as the average DNA conservation score across nucleotides in a user-specified window around the gRNA cut site. In \textbf{a}, we show the correlation between observed gRNA activity and the conservation scores for different window sizes for essential genes. The data suggest an optimal window of 18 nucleotides around the cut site. \textbf{b} Distributions of the observed gRNA log-fold changes (LFCs) based on whether or not gRNAs are targeting regions of high conservation (positive gRNA conservation score) or regions of low conservation (negative gRNA conservation score), for gRNAs targeting essential genes. \textbf{c} Same as \textbf{b}, but for gRNAs targeting non-essential genes. \textbf{d} Relationship between gRNA activity and gRNA position within the target coding sequence (CDS) for gRNAs targeting essential genes in the Hart2015 dataset.  The Ensembl canonical transcript was used as the target CDS for each gene. The red curve represents a LOWESS trend. gRNAs located beyond the first 85\% of the CDS (to the right of the the vertical line) show a progressive decline in activity. \textbf{e} Same as \textbf{d}, but for gRNAs targeting non-essential genes.  Source data are provided as a Source Data file.
   }
@@ -161,7 +161,7 @@ The x-axis shows the total size in nucleotides of the DNA target space formed by
 % Supp Figure CasRx (aa genomic tracks)
 \begin{figure}
 \centering
-\includegraphics[width=01\textwidth]{analyses/casrx/sanjana//figures/casrx_supp_long.pdf}
+\includegraphics[width=01\textwidth]{../analyses/casrx/sanjana//figures/casrx_supp_long.pdf}
   \caption{\textbf{CasRx tiling screens of \textit{CD55} and \textit{CD46}.}
 Pooled FACS tiling screening data of genes \textit{CD55} (\textbf{a}) and \textit{CD46} (\textbf{b}) performed in HEK 294 cells using CasRx (\textit{Rfx}Cas13d). Processed and normalized log$_2$ fold changes were obtained from \citet{wessels2020massively}. Both screens are represented using the canonical Ensembl isoforms.  We remapped and reannotated all gRNA sequences using \textit{crisprDesign}; isoform annotation, on-target activity score using CasRx-RF as implemented in \textit{crisprScore}, and off-target alignments were added to each gRNA. The color of the dots indicates the number of isoforms targeted by each gRNA. The size of the dots is proportional to the on-target activity score. The coding sequence (CDS) is highlighted in grey. LOESS regression curves are shown as solid lines. For both genes, transcript per million (TPM) counts in HEK 293 cells summed across all isoforms overlapping a given nucleotide position are shown below the log-fold change panels. Source data are provided as a Source Data file.
 }
@@ -172,7 +172,7 @@ Pooled FACS tiling screening data of genes \textit{CD55} (\textbf{a}) and \texti
 % Supp Figure CasRx (mismatch tolerance)
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{analyses/casrx/sanjana//figures/casrx_supp.pdf}
+\includegraphics[width=1\textwidth]{../analyses/casrx/sanjana//figures/casrx_supp.pdf}
   \caption{\textbf{Probability weights used for off-target scoring of CasRx gRNAs}
 \textbf{a} Boxplots of the differences in log2 fold change $(\Delta$LFC) between single-mismatch (SM) gRNAs and their corresponding perfect-match (PM) gRNAs in the GFP tiling screen. 
 The boxes represent the $25-75\%$ interquartile ranges (IQR), and the central lines represent the median values. The whiskers extend 1.5 times the IQR from the median value. Each boxplot contains $n=78$ data points. X-axis represents the mismatch position within the spacer sequence, with 1 being the position next to the direct repeat.
@@ -189,13 +189,10 @@ The smooth curve was obtained using LOESS regression. The dotted line represents
 \bibliography{references}
 
 
-\fixme{$n=78$}
 
 \end{document}
 
 
-\fixme{Boxplots of the differences in log2 fold change $(\Delta$LFC) between single-mismatch (SM) gRNAs and their corresponding perfect-match (PM) gRNAs in the GFP tiling screen}
-WHISKERS 
 
 
 
